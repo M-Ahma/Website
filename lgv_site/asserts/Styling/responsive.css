@@ -1,0 +1,78 @@
+@media (max-width: 960px) {
+  nav {
+    padding: 18px 24px;
+  }
+  nav.solid {
+    padding: 14px 24px;
+  }
+  .nav-links,
+  .nav-actions {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+  .sec {
+    padding: 52px 24px;
+  }
+  .cat-grid,
+  .wed-grid,
+  .vgrid,
+  .tgrid,
+  .stat-cards,
+  .hall-grid {
+    grid-template-columns: 1fr;
+  }
+  .ven-layout,
+  .svc-item,
+  .svc-item.rev,
+  .contact-wrap,
+  .admin-wrap,
+  .profile-wrap {
+    grid-template-columns: 1fr;
+  }
+  .admin-sidebar {
+    display: none;
+  }
+  .contact-l,
+  .contact-r,
+  .profile-wrap {
+    padding: 100px 24px 60px;
+  }
+  .contact-r {
+    padding: 50px 24px;
+  }
+  .admin-main {
+    padding: 90px 20px 60px;
+  }
+  .filter-inner,
+  .vgrid,
+  .foot-grid {
+    padding: 16px 20px;
+  }
+  .vgrid {
+    grid-template-columns: 1fr;
+    padding: 28px 24px 60px;
+  }
+  .svc-item.rev {
+    direction: ltr;
+  }
+  .page-hero {
+    padding: 0 24px 40px;
+  }
+  .foot-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .frow {
+    grid-template-columns: 1fr;
+  }
+  .profile-wrap {
+    grid-template-columns: 1fr;
+  }
+  .bk-step-label {
+    display: none;
+  }
+  .loc-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

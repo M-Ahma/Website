@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Booking Request</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+  <style>
+    /* ── AI Date Check Panel ── */
+    .date-ai-wrap {
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 14px;
+      transition: all 0.4s;
+    }
+    .date-ai-panel {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      padding: 20px 24px;
+      border: 1px solid rgba(255,215,100,0.18);
+      border-radius: 14px;
+    }
+    .date-ai-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .date-ai-orb {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #ffd764, #f0a500);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .date-ai-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px; color: #ffd764;
+    }
+    .date-ai-sub {
+      font-size: 10px; color: rgba(255,255,255,0.4);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .date-ai-text {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px; line-height: 1.7;
+      font-family: 'Jost', sans-serif;
+      min-height: 40px;
+    }
+    .date-ai-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.5px; margin-top: 12px;
+    }
+    .date-ai-badge.ok   { background:rgba(80,200,120,.18); color:#7ee8a2; border:1px solid rgba(80,200,120,.3); }
+    .date-ai-badge.bad  { background:rgba(220,80,80,.18);  color:#ff8a8a; border:1px solid rgba(220,80,80,.3);  }
+    .date-ai-badge.wait { background:rgba(255,215,100,.1); color:#ffd764; border:1px solid rgba(255,215,100,.2); }
+    .ai-alts { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .ai-alt-btn {
+      padding: 6px 14px; border:1px solid rgba(255,215,100,.3);
+      border-radius:8px; background:rgba(255,215,100,.08);
+      color:#ffd764; font-size:12px; cursor:pointer;
+      font-family:'Jost',sans-serif; transition:all .2s;
+    }
+    .ai-alt-btn:hover { background:rgba(255,215,100,.18); transform:translateY(-1px); }
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
+    .pulsing { animation: pulse 1.2s infinite; }
+    .thinking-dots span { animation:blink 1.4s infinite both; font-size:16px; color:#ffd764; }
+    .thinking-dots span:nth-child(2){animation-delay:.2s}
+    .thinking-dots span:nth-child(3){animation-delay:.4s}
+    @keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+
+    /* ── Quick Availability Widget ── */
+    .avail-mini {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .avail-mini-label { font-size: 13px; color: var(--stone); flex-shrink: 0; }
+    .avail-mini input { flex: 1; min-width: 160px; }
+    .avail-mini-result {
+      font-size: 13px; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-booking">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80')"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content">
+        <h1>Booking Request</h1>
+        <p>Complete your booking in 3 simple steps.</p>
+      </div>
+    </div>
+
+    <section class="sec">
+      <div class="bk-stepper">
+        <div class="bk-step active" id="bkStep1"><div class="bk-step-num">1</div><div class="bk-step-label">Your Details</div></div>
+        <div class="bk-step-line"></div>
+        <div class="bk-step" id="bkStep2"><div class="bk-step-num">2</div><div class="bk-step-label">Venue & Date</div></div>
+        <div class="bk-step-line"></div>
+        <div class="bk-step" id="bkStep3"><div class="bk-step-num">3</div><div class="bk-step-label">Review & Confirm</div></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="bk-panel active" id="bkP1">
+        <div class="ai-badge">AI-Powered Form</div>
+        <div class="ai-panel">
+          <h4>AI Wedding Advisor</h4>
+          <div class="ai-suggestion" id="bkAiSug1">Fill in your details and I'll start personalising your experience…</div>
+          <div class="ai-chips" id="bkChips1"></div>
+        </div>
+        <div style="background:white;border-radius:var(--r);padding:32px;border:1px solid rgba(0,0,0,0.06)">
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Full Name</label><input class="finp" id="bk1Name" placeholder="Sarah Johnson" oninput="debounceBkAI1()" /></div>
+            <div class="fgrp"><label class="flbl">Partner's Name</label><input class="finp" id="bk1Partner" placeholder="Marco Rossi" oninput="debounceBkAI1()" /></div>
+          </div>
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Email</label><input class="finp" id="bk1Email" type="email" placeholder="you@example.com" /></div>
+            <div class="fgrp"><label class="flbl">Phone</label><input class="finp" id="bk1Phone" type="tel" placeholder="+92 300 0000000" /></div>
+          </div>
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Nationality</label><input class="finp" id="bk1Nation" placeholder="Pakistani" oninput="debounceBkAI1()" /></div>
+            <div class="fgrp">
+              <label class="flbl">How did you hear about us?</label>
+              <select class="fsel2" id="bk1Source">
+                <option>Google</option><option>Instagram</option><option>Friend / Family</option>
+                <option>Wedding Magazine</option><option>Pinterest</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div style="text-align:right;margin-top:8px">
+            <button class="btn btn-dk" onclick="bkNext(1)">Next: Venue & Date →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="bk-panel" id="bkP2">
+        <div class="ai-badge">AI-Powered Form</div>
+        <div class="ai-panel">
+          <h4>AI Venue Advisor</h4>
+          <div class="ai-suggestion" id="bkAiSug2">Select your preferences and I'll recommend the perfect venue…</div>
+          <div class="ai-chips" id="bkChips2">
+            <span class="ai-chip" onclick="toggleChip(this)">Romantic</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Rustic</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Luxury</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Lakeside</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Hilltop</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Vineyard</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Coastal</span>
+            <span class="ai-chip" onclick="toggleChip(this)">Historic</span>
+          </div>
+          <button class="ai-generate-btn" onclick="generateBkAI2()">✦ Get AI Recommendation</button>
+        </div>
+        <div style="background:white;border-radius:var(--r);padding:32px;border:1px solid rgba(0,0,0,0.06)">
+          <div class="frow">
+            <div class="fgrp">
+              <label class="flbl">Preferred Venue</label>
+              <select class="fsel2" id="bk2Venue">
+                <option value="">No preference — advise me</option>
+                <option>Pearl Continental Banquet, Gulberg</option>
+                <option>Serena Hotel Banquet, DHA Phase 2</option>
+                <option>Nishat Hotel Banquet, MM Alam Road</option>
+                <option>PC DHA Marquee, Defence Road</option>
+                <option>Model Town Grand Marquee, Main Boulevard</option>
+                <option>Johar Grand Banquet, Johar Town</option>
+                <option>Expo Centre Gulberg, Jail Road</option>
+                <option>Royal Marquee DHA, Phase 4</option>
+                <option>Green Park Marquee, Wahdat Road</option>
+                <option>Gulshan Ravi Grand Marquee, Main Ravi Road</option>
+                <option>Al-Hamra Cultural Complex, Mall Road</option>
+                <option>Avari Towers Banquet, Shahrah-e-Quaid-e-Azam</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label class="flbl">Desired Region</label>
+              <select class="fsel2" id="bk2Region">
+                <option>No preference</option>
+                <option>Gulberg</option>
+                <option>DHA</option>
+                <option>Model Town</option>
+                <option>Johar Town</option>
+                <option>Gulshan-e-Ravi</option>
+                <option>Mall Road</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Date + AI Availability Check -->
+          <div class="frow">
+            <div class="fgrp">
+              <label class="flbl">Wedding Date</label>
+              <input class="finp" id="bk2Date" type="date" onchange="checkBkDateAvailability()" />
+              <!-- AI Panel appears here -->
+              <div id="bkDateAiWrap" class="date-ai-wrap" style="display:none">
+                <div class="date-ai-panel">
+                  <div class="date-ai-header">
+                    <div class="date-ai-orb">✦</div>
+                    <div>
+                      <div class="date-ai-label">AI Availability Check</div>
+                      <div class="date-ai-sub">Checking date in real-time</div>
+                    </div>
+                  </div>
+                  <div class="date-ai-text" id="bkDateAiText">
+                    <span class="thinking-dots"><span>•</span><span>•</span><span>•</span></span>
+                  </div>
+                  <div id="bkDateAiBadge" class="date-ai-badge wait">⟡ Checking…</div>
+                  <div class="ai-alts" id="bkDateAiAlts"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl">Flexible on date?</label>
+              <select class="fsel2" id="bk2Flex">
+                <option>No, fixed date</option><option>±1 week</option><option>±1 month</option><option>Any date in season</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Guest Count</label><input class="finp" id="bk2Guests" type="number" placeholder="80" min="10" max="600" /></div>
+            <div class="fgrp">
+              <label class="flbl">Budget (PKR)</label>
+              <select class="fsel2" id="bk2Budget">
+                <option>Under ₨500,000</option><option>₨500k–₨1M</option>
+                <option>₨1M–₨2M</option><option>₨2M–₨5M</option><option>₨5M+</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Services Required</label>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px" id="svcChips">
+              <span class="ai-chip" onclick="toggleChip(this)">Full Planning</span>
+              <span class="ai-chip" onclick="toggleChip(this)">Photography</span>
+              <span class="ai-chip" onclick="toggleChip(this)">Catering</span>
+              <span class="ai-chip" onclick="toggleChip(this)">Floral Design</span>
+              <span class="ai-chip" onclick="toggleChip(this)">Music & Entertainment</span>
+              <span class="ai-chip" onclick="toggleChip(this)">Transport</span>
+            </div>
+          </div>
+
+          <!-- Date blocked warning -->
+          <div id="bkDateBlockedMsg" style="display:none;background:#fff5f5;border:1px solid #ffd0d0;border-radius:10px;padding:14px 18px;margin-top:8px;color:#c0392b;font-size:13px">
+            ⚠️ This date is already booked. Please choose another date or mark yourself as flexible above.
+          </div>
+
+          <div style="display:flex;justify-content:space-between;margin-top:20px">
+            <button class="btn btn-ol btn-sm" onclick="bkNext(0)">← Back</button>
+            <button class="btn btn-dk" onclick="bkNext(2)">Next: Review →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="bk-panel" id="bkP3">
+        <div class="ai-badge">AI Summary</div>
+        <div class="ai-panel">
+          <h4>Your Personalised Summary</h4>
+          <div class="ai-suggestion" id="bkAiSug3">Generating your personalised booking summary…</div>
+        </div>
+        <div class="summary-box" id="bkSummary"></div>
+        <div style="background:white;border-radius:var(--r);padding:32px;border:1px solid rgba(0,0,0,0.06)">
+          <div class="fgrp">
+            <label class="flbl">Special Requests or Notes</label>
+            <textarea class="ftxt" id="bk3Notes" placeholder="Anything else we should know…"></textarea>
+          </div>
+          <div class="fgrp" style="display:flex;align-items:flex-start;gap:12px;margin-top:4px">
+            <input type="checkbox" id="bk3Terms" style="margin-top:4px;width:16px;height:16px;cursor:pointer" />
+            <label for="bk3Terms" style="font-size:14px;color:var(--stone);cursor:pointer">I agree to the
+              <span style="color:var(--olive-dk);text-decoration:underline">Terms & Conditions</span>
+              and understand that a 20% deposit is required to confirm the booking.</label>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px">
+            <button class="btn btn-ol btn-sm" onclick="bkNext(1)">← Back</button>
+            <button class="btn btn-dk" onclick="submitBooking()">Confirm Booking Request →</button>
+          </div>
+        </div>
+        <div class="fsuccess" id="bkSuccess" style="display:none;background:white;border-radius:var(--r);border:1px solid rgba(0,0,0,0.06);padding:56px">
+          <div class="fsuccess-icon">💍</div>
+          <h3>Request Submitted!</h3>
+          <p>Your booking request has been received. A dedicated wedding specialist will contact you within 24 hours.</p>
+          <div id="bkRefCode" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin-top:12px"></div>
+          <button class="btn btn-dk" style="margin-top:24px" onclick="window.location.href='index.html'">Back to Home</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-footer"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:5000/api';
+    let bkCurrentStep = 0;
+    let bkDateBlocked = false;
+
+    // ── Shared booked dates (from localStorage, synced with admin) ──
+    function getBookedDates() {
+      try {
+        const s = localStorage.getItem('lgv_booked_dates');
+        return s ? JSON.parse(s) : [];
+      } catch(e) { return []; }
+    }
+
+    // ── Step navigation ──
+    function bkNext(step) {
+      if (step === 1 && bkCurrentStep === 0) {
+        const n = document.getElementById('bk1Name').value.trim();
+        const e = document.getElementById('bk1Email').value.trim();
+        if (!n || !e) { alert('Please fill in your name and email.'); return; }
+      }
+      if (step === 2 && bkCurrentStep === 1) {
+        const dateVal = document.getElementById('bk2Date').value;
+        const flex    = document.getElementById('bk2Flex').value;
+        if (dateVal && bkDateBlocked && flex === 'No, fixed date') {
+          alert('The selected date is already booked. Please choose a different date or mark yourself as flexible.');
+          return;
+        }
+      }
+      switchBkStep(step);
+      if (step === 2) { buildSummary(); setTimeout(generateBkAI3, 800); }
+    }
+
+    function switchBkStep(i) {
+      bkCurrentStep = i;
+      [0,1,2].forEach(j => {
+        document.getElementById(`bkP${j+1}`).classList.toggle('active', j === i);
+        const s = document.getElementById(`bkStep${j+1}`);
+        s.classList.toggle('active', j === i);
+        s.classList.toggle('done', j < i);
+      });
+      window.scrollTo({ top: document.querySelector('.bk-stepper').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    // ── AI Date Availability Check ──
+    async function checkBkDateAvailability() {
+      const dateVal = document.getElementById('bk2Date').value;
+      if (!dateVal) return;
+
+      const wrap    = document.getElementById('bkDateAiWrap');
+      const textEl  = document.getElementById('bkDateAiText');
+      const badge   = document.getElementById('bkDateAiBadge');
+      const altsEl  = document.getElementById('bkDateAiAlts');
+      const blockedMsg = document.getElementById('bkDateBlockedMsg');
+
+      wrap.style.display = 'block';
+      altsEl.innerHTML = '';
+      textEl.innerHTML = '<span class="thinking-dots"><span>•</span><span>•</span><span>•</span></span> Checking availability…';
+      badge.className = 'date-ai-badge wait';
+      badge.textContent = '⟡ Checking…';
+
+      const bookedDates = getBookedDates();
+      const isBooked = bookedDates.includes(dateVal);
+      bkDateBlocked = isBooked;
+      blockedMsg.style.display = isBooked ? 'block' : 'none';
+
+      const dateObj = new Date(dateVal + 'T00:00:00');
+      const formattedDate = dateObj.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      const venue = document.getElementById('bk2Venue').value;
+
+      const prompt = `You are an AI assistant for Smart Venues, a premium wedding venue in Lahore.
+
+The client wants to book "${venue}" on ${formattedDate}.
+Status: This date is ${isBooked ? 'ALREADY BOOKED / UNAVAILABLE' : 'AVAILABLE'}.
+Booked dates list: ${JSON.stringify(bookedDates)}
+
+${isBooked
+  ? `Politely inform that ${formattedDate} is unavailable. Suggest 3 nearby alternative dates NOT in the booked list.
+End with line: ALTERNATIVES: date1, date2, date3 (YYYY-MM-DD format)`
+  : `Confirm availability of ${formattedDate} enthusiastically. Give one brief tip (weather, seasonal advice, etc.).`}
+Keep response under 60 words. Warm and professional tone.`;
+
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1000,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+        const data = await res.json();
+        let fullText = data.content?.[0]?.text || '';
+        let mainText = fullText;
+        let altDates = [];
+
+        if (isBooked && fullText.includes('ALTERNATIVES:')) {
+          const parts = fullText.split('ALTERNATIVES:');
+          mainText = parts[0].trim();
+          const matches = (parts[1] || '').match(/\d{4}-\d{2}-\d{2}/g) || [];
+          altDates = matches.filter(d => !bookedDates.includes(d)).slice(0,3);
+        }
+
+        textEl.textContent = mainText;
+        badge.className = `date-ai-badge ${isBooked ? 'bad' : 'ok'}`;
+        badge.textContent = isBooked ? '✕ Date Unavailable' : '✓ Date Available';
+
+        if (altDates.length > 0) {
+          altsEl.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,.4);width:100%;display:block;margin-bottom:6px">Suggested alternatives:</span>' +
+            altDates.map(d => {
+              const label = new Date(d + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+              return `<button class="ai-alt-btn" onclick="selectBkAltDate('${d}')">${label}</button>`;
+            }).join('');
+        }
+      } catch(e) {
+        textEl.textContent = isBooked
+          ? `${formattedDate} is unfortunately not available. Please choose another date.`
+          : `${formattedDate} is available! We look forward to hosting your celebration.`;
+        badge.className = `date-ai-badge ${isBooked ? 'bad' : 'ok'}`;
+        badge.textContent = isBooked ? '✕ Date Unavailable' : '✓ Date Available';
+      }
+    }
+
+    function selectBkAltDate(dateStr) {
+      document.getElementById('bk2Date').value = dateStr;
+      checkBkDateAvailability();
+    }
+
+    // ── Build Summary ──
+    function buildSummary() {
+      const rows = [
+        ['Couple',  document.getElementById('bk1Name').value + (document.getElementById('bk1Partner').value ? ` & ${document.getElementById('bk1Partner').value}` : '')],
+        ['Venue',   document.getElementById('bk2Venue').value],
+        ['Date',    document.getElementById('bk2Date').value || 'TBD'],
+        ['Guests',  document.getElementById('bk2Guests').value || 'TBD'],
+        ['Budget',  document.getElementById('bk2Budget').value],
+        ['Deposit', '20% upon confirmation'],
+      ];
+      document.getElementById('bkSummary').innerHTML =
+        `<h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:14px">Booking Summary</h4>` +
+        rows.map((r,i) => `<div class="summary-row"><span class="lbl">${r[0]}</span><span style="${i===rows.length-1?'font-weight:600':''}">${r[1]}</span></div>`).join('');
+    }
+
+    // ── Submit ──
+    async function submitBooking() {
+      if (!document.getElementById('bk3Terms').checked) { alert('Please agree to the Terms & Conditions.'); return; }
+      const payload = {
+        client_name:  document.getElementById('bk1Name').value.trim(),
+        client_email: document.getElementById('bk1Email').value.trim(),
+        client_phone: document.getElementById('bk1Phone').value.trim(),
+        venue_id:     1,
+        wedding_date: document.getElementById('bk2Date').value,
+        guest_count:  document.getElementById('bk2Guests').value || 0,
+        notes:        document.getElementById('bk3Notes').value,
+        venue_price:  0, grand_total: 0
+      };
+      try {
+        const res  = await fetch(`${API_BASE}/bookings/create`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.bookingReference) {
+          document.getElementById('bkRefCode').textContent = `Reference: ${data.bookingReference}`;
+        }
+      } catch(e) { console.warn('API offline — showing success in demo mode'); }
+      document.getElementById('bkSummary').style.display = 'none';
+      document.getElementById('bkP3').querySelectorAll('.fgrp,.btn').forEach(el => el.style.display='none');
+      document.getElementById('bkSuccess').style.display = 'block';
+    }
+
+    // ── AI helpers ──
+    let bkAI1Timer = null;
+    function debounceBkAI1() { clearTimeout(bkAI1Timer); bkAI1Timer = setTimeout(generateBkAI1, 1200); }
+    function generateBkAI1() {
+      const sug = document.getElementById('bkAiSug1');
+      const n   = document.getElementById('bk1Name').value.trim();
+      const nat = document.getElementById('bk1Nation').value.trim();
+      sug.classList.add('loading');
+      setTimeout(() => {
+        sug.classList.remove('loading');
+        sug.textContent = n
+          ? `Welcome, ${n}! ${nat ? `As ${nat} clients, we'll ensure a fully dedicated team and can arrange all logistics.` : ''} We're excited to help plan your wedding.`
+          : "Tell me about yourselves and I'll start curating your perfect experience.";
+        if (n) {
+          document.getElementById('bkChips1').innerHTML = ['Dedicated coordinator','Bilingual ceremony','Flexible payment plans','Airport transfers','Pre-wedding venue tour']
+            .map(c => `<span class="ai-chip" onclick="toggleChip(this)">${c}</span>`).join('');
+        }
+      }, 900);
+    }
+    function generateBkAI2() {
+      const sug   = document.getElementById('bkAiSug2');
+      const chips = [...document.querySelectorAll('#bkChips2 .ai-chip.sel')].map(c => c.textContent).join(', ');
+      sug.classList.add('loading');
+      setTimeout(() => {
+        sug.classList.remove('loading');
+        sug.textContent = chips
+          ? `Based on your style (${chips}), I recommend our Grand Ballroom for a luxurious feel, or the Garden Pavilion for a romantic outdoor setting.`
+          : 'Based on our most popular bookings, the Grand Ballroom is ideal for large celebrations while the Garden Pavilion is perfect for intimate gatherings.';
+      }, 1100);
+    }
+    async function generateBkAI3() {
+      const sug   = document.getElementById('bkAiSug3');
+      const name  = document.getElementById('bk1Name').value;
+      const venue = document.getElementById('bk2Venue').value;
+      const date  = document.getElementById('bk2Date').value;
+      const guests= document.getElementById('bk2Guests').value;
+      sug.classList.add('loading');
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            model:"claude-sonnet-4-20250514", max_tokens:1000,
+            messages:[{ role:"user", content:`Write a warm 2-sentence personalized summary for ${name}'s wedding booking at ${venue} on ${date} for ${guests} guests at Smart Venues. Be enthusiastic and specific.` }]
+          })
+        });
+        const data = await res.json();
+        sug.classList.remove('loading');
+        sug.textContent = data.content?.[0]?.text || "Your booking looks perfect! We can't wait to make your day unforgettable.";
+      } catch(e) {
+        sug.classList.remove('loading');
+        sug.textContent = "Your booking looks perfect! A specialist will reach out within 24 hours to finalise details.";
+      }
+    }
+  </script>
+</body>
+</html>

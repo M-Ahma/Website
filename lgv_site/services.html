@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-services">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=80')"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content">
+        <h1>Our Services</h1>
+        <p>Every detail of your dream day, handled with love.</p>
+      </div>
+    </div>
+
+    <div class="svc-list">
+      <div class="svc-item">
+        <div class="svc-img" onclick="lb('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1200&q=80','Photography')">
+          <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=700&q=80" alt="" loading="lazy" />
+        </div>
+        <div>
+          <div class="svc-num">01</div>
+          <p class="svc-tag">Capture the moment</p>
+          <h2 class="svc-title">Photography & Film</h2>
+          <p class="svc-desc">Lahore's finest photographers and cinematographers document your wedding with artistry — creating heirlooms you'll treasure forever.</p>
+          <ul class="svc-feats">
+            <li>Full-day photo & video coverage</li>
+            <li>Drone aerial footage</li>
+            <li>Edited highlight film</li>
+            <li>High-resolution gallery delivery</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="svc-item rev">
+        <div class="svc-img" onclick="lb('https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1200&q=80','Floral Design')">
+          <img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=700&q=80" alt="" loading="lazy" />
+        </div>
+        <div>
+          <div class="svc-num">02</div>
+          <p class="svc-tag">Bloom & flourish</p>
+          <h2 class="svc-title">Floral & Décor Design</h2>
+          <p class="svc-desc">From intimate centrepieces to grand installations, our designers transform venues into living works of art using the finest seasonal Pakistani flowers and blooms.</p>
+          <ul class="svc-feats">
+            <li>Bespoke ceremony arch design</li>
+            <li>Reception table arrangements</li>
+            <li>Bridal bouquet & corsages</li>
+            <li>Full venue styling</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="svc-item">
+        <div class="svc-img" onclick="lb('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80','Catering')">
+          <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80" alt="" loading="lazy" />
+        </div>
+        <div>
+          <div class="svc-num">03</div>
+          <p class="svc-tag">Taste of Pakistan</p>
+          <h2 class="svc-title">Catering & Wine</h2>
+          <p class="svc-desc">Celebrated chefs craft bespoke menus celebrating authentic Pakistani cuisine — from traditional BBQ to fine dining — for an unforgettable wedding feast.</p>
+          <ul class="svc-feats">
+            <li>Traditional & fusion wedding menus</li>
+            <li>Refreshments & mocktail service</li>
+            <li>Halal dietary accommodations</li>
+            <li>Wedding cake design</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="svc-item rev">
+        <div class="svc-img" onclick="lb('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80','Planning')">
+          <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&q=80" alt="" loading="lazy" />
+        </div>
+        <div>
+          <div class="svc-num">04</div>
+          <p class="svc-tag">Effortless</p>
+          <h2 class="svc-title">Full Planning & Coordination</h2>
+          <p class="svc-desc">Our planners handle every logistics, vendor, and timeline detail — so you can be fully present and enjoy every magical moment of your wedding.</p>
+          <ul class="svc-feats">
+            <li>Venue scouting across all Lahore areas</li>
+            <li>Vendor management & contracts</li>
+            <li>Day-of coordination</li>
+            <li>Guest accommodation assistance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:0 52px 80px">
+      <button class="btn btn-dk" onclick="window.location.href='contact.html'">Start Planning →</button>
+    </div>
+
+    <div class="page-footer"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLb()">
+    <button class="lb-close" onclick="closeLb()">✕</button>
+    <img class="lb-img" id="lbImg" src="" alt="" />
+    <div class="lb-caption" id="lbCap"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+</body>
+</html>

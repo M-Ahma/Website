@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-contact">
+    <div class="contact-wrap">
+      <div class="contact-l">
+        <h1>Let's plan your <em style="font-style:italic">dream</em> wedding</h1>
+        <p>Fill in the form and a wedding specialist will be in touch within 24 hours to discuss your vision.</p>
+        <div class="cinfo">
+          <div class="cinfo-item">
+            <div class="cinfo-icon">✉</div>
+            <div><div class="cinfo-label">Email</div><div class="cinfo-val">hello@smartvenues.com</div></div>
+          </div>
+          <div class="cinfo-item">
+            <div class="cinfo-icon">☎</div>
+            <div><div class="cinfo-label">Phone</div><div class="cinfo-val">+92 42 111 000 000</div></div>
+          </div>
+          <div class="cinfo-item">
+            <div class="cinfo-icon">◎</div>
+            <div><div class="cinfo-label">Studio</div><div class="cinfo-val">Main Boulevard Gulberg, Lahore, Pakistan</div></div>
+          </div>
+        </div>
+        <div class="cmap">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108882.14!2d74.2559!3d31.5204!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39190483e58107d9%3A0xc23abe6ccc7e2462!2sLahore%2C%20Punjab%2C%20Pakistan!5e0!3m2!1sen!2s!4v1" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <div class="contact-r">
+        <h2>Send us a message</h2>
+        <div id="cForm">
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Your Name</label><input class="finp" id="cName" placeholder="Sarah & Marco" /></div>
+            <div class="fgrp"><label class="flbl">Email</label><input class="finp" id="cEmail" type="email" placeholder="you@example.com" /></div>
+          </div>
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Wedding Date</label><input class="finp" id="cDate" type="date" /></div>
+            <div class="fgrp">
+              <label class="flbl">Guests</label>
+              <select class="fsel2" id="cGuests">
+                <option>Under 30</option><option>30–60</option><option>60–100</option>
+                <option>100–200</option><option>200+</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Preferred Region</label>
+            <select class="fsel2">
+              <option>No preference</option><option>Gulberg</option><option>DHA</option>
+              <option>Model Town</option><option>Johar Town</option><option>Bahria Town</option><option>Gulshan-e-Ravi</option>
+            </select>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Budget Range</label>
+            <select class="fsel2">
+              <option>Under PKR 500,000</option><option>PKR 500k–1 Million</option>
+              <option>PKR 1M–2 Million</option><option>PKR 2M–5 Million</option><option>PKR 5 Million+</option>
+            </select>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Tell us your vision</label>
+            <textarea class="ftxt" id="cMsg" placeholder="Event type, preferred area, must-haves…"></textarea>
+          </div>
+          <button class="fsub" onclick="submitContact()">Send Enquiry →</button>
+        </div>
+        <div class="fsuccess" id="cSuccess" style="display:none">
+          <div class="fsuccess-icon">🌿</div>
+          <h3>Thank you!</h3>
+          <p>We'll be in touch within 24 hours. We can't wait to help plan your dream wedding in Lahore.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:5000/api';
+
+    async function submitContact() {
+      const name         = document.getElementById('cName').value.trim();
+      const email        = document.getElementById('cEmail').value.trim();
+      const wedding_date = document.getElementById('cDate').value || null;
+      const guest_count  = document.getElementById('cGuests').value || null;
+      const message      = document.getElementById('cMsg').value.trim();
+
+      if (!name || !email) { alert('Please fill in your name and email.'); return; }
+
+      const btn = document.querySelector('.fsub');
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/contact`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ name, email, wedding_date, guest_count, message })
+        });
+        if (res.ok) {
+          document.getElementById('cForm').style.display    = 'none';
+          document.getElementById('cSuccess').style.display = 'block';
+        } else {
+          btn.textContent = 'Send Enquiry';
+          btn.disabled = false;
+          alert('Failed to send. Try again.');
+        }
+      } catch (err) {
+        document.getElementById('cForm').style.display    = 'none';
+        document.getElementById('cSuccess').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

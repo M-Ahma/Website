@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Hall Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+  <style>
+    /* ── AI Availability Panel ── */
+    .ai-avail-panel {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      border: 1px solid rgba(255,215,100,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .ai-avail-panel::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,215,100,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .ai-avail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .ai-avail-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ffd764, #f0a500);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .ai-avail-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      color: #ffd764;
+      margin: 0;
+    }
+    .ai-avail-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .ai-avail-response {
+      color: rgba(255,255,255,0.88);
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 48px;
+      font-family: 'Jost', sans-serif;
+    }
+    .ai-avail-response.loading {
+      opacity: 0.5;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
+
+    .ai-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-top: 14px;
+    }
+    .ai-status-badge.booked {
+      background: rgba(220,80,80,0.18);
+      color: #ff8a8a;
+      border: 1px solid rgba(220,80,80,0.3);
+    }
+    .ai-status-badge.available {
+      background: rgba(80,200,120,0.18);
+      color: #7ee8a2;
+      border: 1px solid rgba(80,200,120,0.3);
+    }
+    .ai-status-badge.idle {
+      background: rgba(255,215,100,0.12);
+      color: #ffd764;
+      border: 1px solid rgba(255,215,100,0.2);
+    }
+    .ai-alt-dates {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .ai-alt-date-btn {
+      padding: 7px 16px;
+      border: 1px solid rgba(255,215,100,0.35);
+      border-radius: 8px;
+      background: rgba(255,215,100,0.08);
+      color: #ffd764;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      transition: all 0.2s;
+    }
+    .ai-alt-date-btn:hover {
+      background: rgba(255,215,100,0.18);
+      transform: translateY(-1px);
+    }
+
+    /* ── Enhanced Calendar ── */
+    .cal-day.booked-admin {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      color: white;
+      cursor: not-allowed;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(200,50,50,0.3);
+    }
+    .cal-day.booked-admin:hover {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      transform: none;
+    }
+    .cal-day.available-day:hover {
+      background: rgba(80,200,120,0.15);
+      border-color: #7ee8a2;
+      cursor: pointer;
+    }
+    .cal-day.clicking {
+      transform: scale(0.95);
+    }
+    .cal-legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .cal-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--stone);
+    }
+    .cal-legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── AI thinking dots ── */
+    .thinking-dots span {
+      animation: blink 1.4s infinite both;
+      font-size: 18px;
+      color: #ffd764;
+    }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+  </style>
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-hall">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80')"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content">
+        <h1>Hall Booking</h1>
+        <p>Choose your perfect space and check availability instantly.</p>
+      </div>
+    </div>
+
+    <section class="sec">
+      <p class="sec-tag">Step 1 — Select your hall</p>
+      <h2 class="sec-title" style="margin-bottom:32px">Choose a Venue Hall</h2>
+      <div class="hall-grid" id="hallGrid"></div>
+
+      <div id="hallFormArea" style="display:none">
+        <div style="background:white;border-radius:var(--r);padding:36px;border:1px solid rgba(0,0,0,0.06)">
+
+          <!-- AI Availability Panel -->
+          <div class="ai-avail-panel" id="aiAvailPanel">
+            <div class="ai-avail-header">
+              <div class="ai-avail-icon">✦</div>
+              <div>
+                <h4 class="ai-avail-title">AI Availability Assistant</h4>
+                <div class="ai-avail-subtitle">Powered by Claude · Real-time booking analysis</div>
+              </div>
+            </div>
+            <div class="ai-avail-response" id="aiAvailText">
+              Select a date on the calendar below and I'll instantly tell you if it's available and suggest the best alternatives.
+            </div>
+            <div id="aiStatusBadge" class="ai-status-badge idle">⟡ Awaiting date selection</div>
+            <div class="ai-alt-dates" id="aiAltDates"></div>
+          </div>
+
+          <p class="sec-tag" style="margin-bottom:20px">Step 2 — Enter booking details</p>
+
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Couple / Client Name</label><input class="finp" id="hName" placeholder="Sarah & Marco" oninput="debounceHallAI()" /></div>
+            <div class="fgrp"><label class="flbl">Email Address</label><input class="finp" id="hEmail" type="email" placeholder="you@example.com" /></div>
+          </div>
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Event Date</label><input class="finp" id="hDate" type="date" onchange="onDateChange()" /></div>
+            <div class="fgrp">
+              <label class="flbl">Event Time</label>
+              <select class="fsel2" id="hTime">
+                <option>Morning (9am–12pm)</option><option>Afternoon (12pm–5pm)</option>
+                <option>Evening (5pm–11pm)</option><option>Full Day</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fgrp"><label class="flbl">Number of Guests</label><input class="finp" id="hGuests" type="number" min="10" max="500" placeholder="80" oninput="debounceHallAI()" /></div>
+            <div class="fgrp">
+              <label class="flbl">Event Type</label>
+              <select class="fsel2" id="hType" onchange="debounceHallAI()">
+                <option>Wedding Reception</option><option>Ceremony Only</option>
+                <option>Ceremony + Reception</option><option>Engagement Party</option><option>Anniversary Dinner</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Additional Requirements</label>
+            <textarea class="ftxt" id="hNotes" placeholder="Catering preferences, décor requests, accessibility needs…" oninput="debounceHallAI()"></textarea>
+          </div>
+
+          <!-- Availability Calendar -->
+          <div style="margin-bottom:28px">
+            <p class="sec-tag" style="margin-bottom:12px">Availability Calendar — <span id="calMonthLbl"></span></p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <button onclick="changeMonth(-1)" style="background:var(--cream);border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px">← Prev</button>
+              <span id="calTitle" style="font-family:'Cormorant Garamond',serif;font-size:22px"></span>
+              <button onclick="changeMonth(1)"  style="background:var(--cream);border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px">Next →</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="cal-legend">
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"></div>Wedding Booked</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--dg)"></div>Your Selection</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="border:1px solid var(--gold)"></div>Today</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cream)"></div>Available</div>
+            </div>
+          </div>
+
+          <div id="hallFormInner">
+            <div id="dateBlockedMsg" style="display:none;background:#fff5f5;border:1px solid #ffd0d0;border-radius:10px;padding:16px 20px;margin-bottom:20px;color:#c0392b;font-size:14px;font-family:'Jost',sans-serif">
+              ⚠️ This date is already booked. Please select a different date from the calendar above.
+            </div>
+            <button class="fsub" onclick="submitHall()">Confirm Hall Booking →</button>
+          </div>
+          <div class="fsuccess" id="hallSuccess" style="display:none">
+            <div class="fsuccess-icon">🌿</div>
+            <h3>Booking Confirmed!</h3>
+            <p>Your hall booking request has been received. We'll send a confirmation to your email within 2 hours.</p>
+            <button class="btn btn-dk" style="margin-top:24px" onclick="window.location.href='index.html'">Back to Home</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-footer"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script src="./asserts/JS/data.js"></script>
+  <script>
+    let selHall = null;
+    let selectedDate = null;
+    let isDateBlocked = false;
+
+    // ── Booked dates storage (shared with admin) ──
+    function getBookedDates() {
+      try {
+        const stored = localStorage.getItem('lgv_booked_dates');
+        return stored ? JSON.parse(stored) : getDefaultBookedDates();
+      } catch(e) {
+        return getDefaultBookedDates();
+      }
+    }
+
+    function getDefaultBookedDates() {
+      // Default pre-booked dates (YYYY-MM-DD format)
+      const now = new Date();
+      const yr = now.getFullYear();
+      const mo = String(now.getMonth() + 1).padStart(2,'0');
+      return [
+        `${yr}-${mo}-05`,
+        `${yr}-${mo}-08`,
+        `${yr}-${mo}-14`,
+        `${yr}-${mo}-19`,
+        `${yr}-${mo}-22`,
+        `${yr}-${mo}-27`,
+      ];
+    }
+
+    function isDateBooked(dateStr) {
+      return getBookedDates().includes(dateStr);
+    }
+
+    // ── Hall rendering ──
+    function renderHalls() {
+      document.getElementById('hallGrid').innerHTML = HALLS.map(h =>
+        `<div class="hall-card${selHall === h.id ? ' sel' : ''}" id="hc-${h.id}">
+          <div class="hall-card-img"><img src="${h.img}" alt="${h.name}" loading="lazy"></div>
+          <div class="hall-card-body">
+            <div class="hall-card-name">${h.name}</div>
+            <div class="hall-card-cap">${h.cap}</div>
+            <div class="hall-card-price">${h.price} <span>/ event</span></div>
+            <button class="hall-select-btn" onclick="selectHall(${h.id})">${selHall === h.id ? '✓ Selected' : 'Select this hall'}</button>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    function selectHall(id) {
+      selHall = id;
+      renderHalls();
+      document.getElementById('hallFormArea').style.display = 'block';
+      document.getElementById('hallFormArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── Calendar ──
+    let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+
+    function changeMonth(d) {
+      calMonth += d;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      if (calMonth < 0)  { calMonth = 11; calYear--; }
+      renderCal();
+    }
+
+    function onDateChange() {
+      const v = document.getElementById('hDate').value;
+      if (v) {
+        selectedDate = v;
+        const d = new Date(v + 'T00:00:00');
+        calYear = d.getFullYear();
+        calMonth = d.getMonth();
+        renderCal();
+        checkDateAvailabilityWithAI(v);
+      }
+    }
+
+    function renderCal() {
+      const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('calTitle').textContent = `${mn[calMonth]} ${calYear}`;
+      document.getElementById('calMonthLbl').textContent = `${mn[calMonth]} ${calYear}`;
+
+      const first = new Date(calYear, calMonth, 1).getDay();
+      const days  = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date();
+      const bookedDates = getBookedDates();
+
+      let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-day-hdr">${d}</div>`).join('');
+      for (let i = 0; i < first; i++) html += `<div class="cal-day empty"></div>`;
+
+      const selDate = document.getElementById('hDate').value;
+      const selD = selDate ? parseInt(selDate.split('-')[2]) : null;
+      const selM = selDate ? parseInt(selDate.split('-')[1]) - 1 : null;
+      const selY = selDate ? parseInt(selDate.split('-')[0]) : null;
+
+      for (let d = 1; d <= days; d++) {
+        const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isBooked = bookedDates.includes(dateStr);
+        const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+        const isSel   = d === selD && calMonth === selM && calYear === selY;
+
+        let cls = 'cal-day';
+        if (isBooked) cls += ' booked-admin';
+        else cls += ' available-day';
+        if (isToday) cls += ' today';
+        if (isSel) cls += ' sel';
+
+        const clickAction = isBooked ? '' : `onclick="calDayClick('${dateStr}')"`;
+        const title = isBooked ? 'This date is already booked for a wedding' : 'Click to select this date';
+
+        html += `<div class="${cls}" ${clickAction} title="${title}">${d}</div>`;
+      }
+      document.getElementById('calGrid').innerHTML = html;
+    }
+
+    function calDayClick(dateStr) {
+      document.getElementById('hDate').value = dateStr;
+      selectedDate = dateStr;
+      const d = new Date(dateStr + 'T00:00:00');
+      calYear = d.getFullYear();
+      calMonth = d.getMonth();
+      renderCal();
+      checkDateAvailabilityWithAI(dateStr);
+    }
+
+    // ── AI Availability Check (Real Claude API) ──
+    async function checkDateAvailabilityWithAI(dateStr) {
+      const panel = document.getElementById('aiAvailPanel');
+      const textEl = document.getElementById('aiAvailText');
+      const badge = document.getElementById('aiStatusBadge');
+      const altDatesEl = document.getElementById('aiAltDates');
+      const blockedMsg = document.getElementById('dateBlockedMsg');
+
+      const booked = isDateBooked(dateStr);
+      isDateBlocked = booked;
+
+      // Show blocked message
+      blockedMsg.style.display = booked ? 'block' : 'none';
+
+      // Get all booked dates for context
+      const bookedDates = getBookedDates();
+      const hallName = selHall ? HALLS.find(h => h.id === selHall)?.name || 'the hall' : 'the hall';
+      const guests = document.getElementById('hGuests').value || 'unspecified number of';
+      const eventType = document.getElementById('hType').value || 'wedding';
+
+      // Show loading state
+      textEl.innerHTML = '<span class="thinking-dots"><span>•</span><span>•</span><span>•</span></span> Analyzing availability…';
+      textEl.className = 'ai-avail-response';
+      badge.className = 'ai-status-badge idle';
+      badge.textContent = '⟡ Checking…';
+      altDatesEl.innerHTML = '';
+
+      // Format date nicely
+      const dateObj = new Date(dateStr + 'T00:00:00');
+      const formattedDate = dateObj.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+      // Build AI prompt
+      const prompt = `You are an AI assistant for Smart Venues, a premium wedding hall booking system.
+
+The customer wants to book "${hallName}" for a ${eventType} on ${formattedDate} for ${guests} guests.
+
+BOOKING STATUS: This date is ${booked ? 'ALREADY BOOKED (not available)' : 'AVAILABLE'}.
+
+Currently booked dates (YYYY-MM-DD): ${JSON.stringify(bookedDates)}
+
+Your task:
+${booked 
+  ? `1. Politely inform that ${formattedDate} is unavailable (already booked for another wedding).
+2. Suggest 3-4 specific alternative dates nearby that are NOT in the booked dates list. Choose dates within 2-3 weeks of ${dateStr}.
+3. Be warm, helpful, and professional. Keep it concise (2-3 sentences).
+4. End with: ALTERNATIVES: [date1], [date2], [date3] (in YYYY-MM-DD format on a new line)`
+  : `1. Confirm that ${formattedDate} is available and express enthusiasm.
+2. Give a brief personalized recommendation for the hall and event.
+3. Be warm and encouraging. Keep it concise (2-3 sentences).`
+}
+
+Respond naturally and warmly in English.`;
+
+      try {
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1000,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+
+        const data = await response.json();
+        const fullText = data.content?.[0]?.text || '';
+
+        // Parse alternatives if date is booked
+        let mainText = fullText;
+        let altDates = [];
+
+        if (booked && fullText.includes('ALTERNATIVES:')) {
+          const parts = fullText.split('ALTERNATIVES:');
+          mainText = parts[0].trim();
+          const altStr = parts[1] || '';
+          // Extract YYYY-MM-DD dates
+          const matches = altStr.match(/\d{4}-\d{2}-\d{2}/g) || [];
+          altDates = matches.filter(d => !bookedDates.includes(d)).slice(0,4);
+        }
+
+        textEl.textContent = mainText;
+        textEl.className = 'ai-avail-response';
+
+        if (booked) {
+          badge.className = 'ai-status-badge booked';
+          badge.textContent = '✕ Date Unavailable';
+
+          if (altDates.length > 0) {
+            altDatesEl.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,0.5);width:100%;display:block;margin-bottom:6px">Suggested alternatives — click to select:</span>' +
+              altDates.map(d => {
+                const dObj = new Date(d + 'T00:00:00');
+                const label = dObj.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+                return `<button class="ai-alt-date-btn" onclick="selectAltDate('${d}')">${label}</button>`;
+              }).join('');
+          }
+        } else {
+          badge.className = 'ai-status-badge available';
+          badge.textContent = '✓ Date Available';
+        }
+
+      } catch (err) {
+        // Fallback if API fails
+        if (booked) {
+          textEl.textContent = `Unfortunately, ${formattedDate} is already reserved for another wedding at ${hallName}. Please select a different date from the calendar — dates shown in red are unavailable.`;
+          badge.className = 'ai-status-badge booked';
+          badge.textContent = '✕ Date Unavailable';
+        } else {
+          textEl.textContent = `Great news! ${formattedDate} is available at ${hallName}. We look forward to hosting your special event.`;
+          badge.className = 'ai-status-badge available';
+          badge.textContent = '✓ Date Available';
+        }
+      }
+    }
+
+    function selectAltDate(dateStr) {
+      document.getElementById('hDate').value = dateStr;
+      selectedDate = dateStr;
+      const d = new Date(dateStr + 'T00:00:00');
+      calYear = d.getFullYear();
+      calMonth = d.getMonth();
+      renderCal();
+      checkDateAvailabilityWithAI(dateStr);
+    }
+
+    // ── Submit ──
+    function submitHall() {
+      if (!selHall) { alert('Please select a hall.'); return; }
+      const n = document.getElementById('hName').value.trim();
+      const e = document.getElementById('hEmail').value.trim();
+      if (!n || !e) { alert('Please fill in your name and email.'); return; }
+      if (!selectedDate) { alert('Please select an event date from the calendar.'); return; }
+      if (isDateBlocked) { alert('This date is already booked. Please select an available date.'); return; }
+      document.getElementById('hallFormInner').style.display = 'none';
+      document.getElementById('hallSuccess').style.display = 'block';
+    }
+
+    // ── Debounce hall AI (for existing panel) ──
+    let hallAiTimer = null;
+    function debounceHallAI() {
+      clearTimeout(hallAiTimer);
+      if (selectedDate) {
+        hallAiTimer = setTimeout(() => checkDateAvailabilityWithAI(selectedDate), 800);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { renderHalls(); renderCal(); });
+  </script>
+</body>
+</html>

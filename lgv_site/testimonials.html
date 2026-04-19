@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Testimonials</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-testimonials">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1583939411023-c86c3c6a2ebe?w=1600&q=80')"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content">
+        <h1>Love Stories</h1>
+        <p>Real couples, real magic.</p>
+      </div>
+    </div>
+
+    <div class="sec center" style="padding-bottom:0">
+      <p class="sec-tag">From our couples</p>
+      <h2 class="sec-title">What they say</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="tgrid" id="tGrid"></div>
+
+    <div class="page-footer"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script src="./asserts/JS/data.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('tGrid').innerHTML = TESTIMONIALS.map(t =>
+        `<div class="tcard">
+          <div class="tcard-stars">${'★'.repeat(t.stars)}</div>
+          <p class="tcard-text">"${t.text}"</p>
+          <div class="tcard-author">
+            <div class="tcard-av"><img src="${t.img}" alt="${t.name}" loading="lazy"></div>
+            <div>
+              <div class="tcard-nm">${t.name}</div>
+              <div class="tcard-venue">${t.venue} · ${t.date}</div>
+            </div>
+          </div>
+        </div>`
+      ).join('');
+    });
+  </script>
+</body>
+</html>

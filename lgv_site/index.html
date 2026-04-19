@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <!-- ══ HOME PAGE ══ -->
+  <div class="page active" id="page-home">
+
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <h1>Intelligent Hall Availability <em>Booking</em> System</h1>
+        <p class="hero-sub">Hand-picked villas, historic estates & breathtaking landscapes — curated for couples who believe in magic.</p>
+        <div class="hero-btns">
+          <button class="btn-hero btn-hero-g" onclick="window.location.href='browse.html'">Explore Venues →</button>
+          <button class="btn-hero btn-hero-o" onclick="window.location.href='hall.html'">Book a Hall</button>
+        </div>
+      </div>
+      <a class="hero-scroll" href="#home-s1"><span>Scroll</span><div class="scroll-ln"></div></a>
+    </section>
+
+    <section class="sec" id="home-s1">
+      <div class="center">
+        <p class="sec-tag">Everything for your day</p>
+        <h2 class="sec-title">Our Specialities</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="lb('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1200&q=80','Photography')">
+          <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=700&q=80" alt="Photography" loading="lazy" />
+          <div class="cat-ov"></div><div class="cat-lb">Photography</div>
+        </div>
+        <div class="cat-card" onclick="lb('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=80','Ceremony')">
+          <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&q=80" alt="Ceremony" loading="lazy" />
+          <div class="cat-ov"></div><div class="cat-lb">Ceremony</div>
+        </div>
+        <div class="cat-card" onclick="lb('https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1200&q=80','Wedding Design')">
+          <img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=700&q=80" alt="Wedding Design" loading="lazy" />
+          <div class="cat-ov"></div><div class="cat-lb">Wedding Design</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" style="padding-top:0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px">
+        <div>
+          <p class="sec-tag">Real love stories</p>
+          <h2 class="sec-title">Featured Weddings</h2>
+        </div>
+        <button class="btn btn-ol btn-sm" onclick="window.location.href='testimonials.html'">View All →</button>
+      </div>
+      <div class="wed-grid">
+        <div class="wed-card" onclick="lb('https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=1200&q=80','Dianne & Adrian')">
+          <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80" alt="Wedding" loading="lazy" />
+          <div class="wed-info"><div class="wed-tag">The Wedding of</div><h3>Dianne & Adrian</h3></div>
+        </div>
+        <div class="wed-card" onclick="lb('https://images.unsplash.com/photo-1583939411023-c86c3c6a2ebe?w=1200&q=80','Zoe & Adrian')">
+          <img src="https://images.unsplash.com/photo-1583939411023-c86c3c6a2ebe?w=800&q=80" alt="Wedding" loading="lazy" />
+          <div class="wed-info"><div class="wed-tag">The Wedding of</div><h3>Zoe & Adrian</h3></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bg-cream" style="padding:76px 0">
+      <div class="center" style="padding:0 52px">
+        <p class="sec-tag">Where love happens</p>
+        <h2 class="sec-title">Locations</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="loc-grid" style="max-width:1240px;margin:36px auto 0;padding:0 52px">
+        <div class="loc-card" onclick="window.location.href='browse.html?filter=Florence'">
+          <img src="https://images.unsplash.com/photo-1541370976299-4d24be35769f?w=500&q=80" alt="Florence" loading="lazy" /><div class="loc-name">Florence</div>
+        </div>
+        <div class="loc-card" onclick="window.location.href='browse.html?filter=Chianti'">
+          <img src="https://images.unsplash.com/photo-1504093376055-b9c3a3e7fef4?w=500&q=80" alt="Chianti" loading="lazy" /><div class="loc-name">Chianti</div>
+        </div>
+        <div class="loc-card" onclick="window.location.href='browse.html?filter=Siena'">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80" alt="Siena" loading="lazy" /><div class="loc-name">Siena</div>
+        </div>
+        <div class="loc-card" onclick="window.location.href='browse.html?filter=Umbria'">
+          <img src="https://images.unsplash.com/photo-1482275548304-a58859dc31b7?w=500&q=80" alt="Umbria" loading="lazy" /><div class="loc-name">Umbria</div>
+        </div>
+        <div class="loc-card" onclick="window.location.href='browse.html?filter=Amalfi'">
+          <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=500&q=80" alt="Amalfi" loading="lazy" /><div class="loc-name">Amalfi Coast</div>
+        </div>
+        <div class="loc-card loc-more" onclick="window.location.href='browse.html'">
+          <div class="loc-more-icon">→</div><span>Browse more</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── AVAILABILITY QUICK CHECK ── -->
+    <section class="sec" style="padding-top:0">
+      <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%);border-radius:20px;padding:48px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,215,100,0.08),transparent 70%);pointer-events:none"></div>
+        <div style="text-align:center;margin-bottom:32px">
+          <p class="sec-tag" style="color:rgba(255,215,100,0.7)">AI-Powered</p>
+          <h2 class="sec-title" style="color:white;margin-bottom:10px">Check Date Availability</h2>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;font-family:'Jost',sans-serif">Instantly find out if your wedding date is available at our hall</p>
+        </div>
+        <div style="max-width:560px;margin:0 auto">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:20px">
+            <input type="date" id="homeCheckDate"
+              style="flex:1;min-width:200px;padding:14px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.07);color:white;font-family:'Jost',sans-serif;font-size:14px;outline:none"
+              onchange="homeCheckAvail()" />
+            <button onclick="homeCheckAvail()"
+              style="padding:14px 28px;background:linear-gradient(135deg,#ffd764,#f0a500);border:none;border-radius:10px;cursor:pointer;font-family:'Jost',sans-serif;font-weight:600;font-size:14px;white-space:nowrap">
+              Check Availability ✦
+            </button>
+          </div>
+          <div id="homeCheckResult" style="display:none;border-radius:12px;padding:20px 24px;text-align:center;transition:all .3s">
+            <div id="homeCheckIcon" style="font-size:28px;margin-bottom:8px"></div>
+            <div id="homeCheckText" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:white;margin-bottom:6px"></div>
+            <div id="homeCheckSub" style="font-size:13px;color:rgba(255,255,255,0.6);font-family:'Jost',sans-serif;margin-bottom:16px"></div>
+            <div id="homeCheckAlts" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px"></div>
+            <button onclick="window.location.href='hall.html'"
+              style="padding:11px 26px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:white;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px">
+              Go to Hall Booking →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <p class="sec-tag" style="margin-bottom:24px">Featured venue</p>
+      <div class="ven-layout">
+        <div class="ven-img" onclick="lb('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80','Villa Balbianello')">
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" alt="Villa Balbianello" loading="lazy" />
+        </div>
+        <div>
+          <div class="ven-num">01 / 12</div>
+          <h2 class="ven-title">Villa Balbianello</h2>
+          <p class="ven-loc">Lake Como, Lombardy</p>
+          <p class="ven-desc">The whole complex consists of two residential buildings, a church, and a portico known as Loggia Durini that can host weddings and events in a truly spectacular setting overlooking the lake.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-dk" onclick="window.location.href='booking.html'">Request Booking</button>
+            <button class="btn btn-ol" onclick="window.location.href='contact.html'">Enquire</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIAL STRIP -->
+    <div class="testi-strip">
+      <div style="max-width:1240px;margin:0 auto">
+        <div class="center">
+          <p class="sec-tag" style="color:rgba(255,255,255,0.4)">From happy couples</p>
+          <h2 class="sec-title" style="color:white">Testimonials</h2>
+          <div class="divider"></div>
+        </div>
+        <div class="testi-slider">
+          <div class="testi-track" id="tTrack">
+            <div class="testi-slide">
+              <p class="testi-q">"Working with Smart Venues was the best decision we made. They found us the most breathtaking villa in Tuscany and every detail was absolutely perfect."</p>
+              <div class="testi-auth">
+                <div class="testi-av"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="" /></div>
+                <div><div class="testi-nm">Sarah & Marco</div><div class="testi-cp">Florence, 2024</div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <p class="testi-q">"From the first email to the last dance, Smart Venues was there every step. Our Chianti wedding exceeded every dream we ever had as a couple."</p>
+              <div class="testi-auth">
+                <div class="testi-av"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="" /></div>
+                <div><div class="testi-nm">Emma & Luca</div><div class="testi-cp">Chianti, 2024</div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <p class="testi-q">"The venue they chose overlooked the most gorgeous valley. Our guests are still talking about it. Absolutely magical and worth every penny."</p>
+              <div class="testi-auth">
+                <div class="testi-av"><img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=100&q=80" alt="" /></div>
+                <div><div class="testi-nm">Dianne & Adrian</div><div class="testi-cp">Val d'Orcia, 2025</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="testi-dots" id="tDots">
+            <div class="testi-dot active" onclick="goT(0)"></div>
+            <div class="testi-dot" onclick="goT(1)"></div>
+            <div class="testi-dot" onclick="goT(2)"></div>
+          </div>
+          <div class="testi-arrows">
+            <button class="testi-arr" onclick="prevT()">←</button>
+            <button class="testi-arr" onclick="nextT()">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer"></div>
+  </div><!-- /page-home -->
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLb()">
+    <button class="lb-close" onclick="closeLb()">✕</button>
+    <img class="lb-img" id="lbImg" src="" alt="" />
+    <div class="lb-caption" id="lbCap"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script>
+    // Testimonial slider
+    let tIdx = 0;
+    function goT(i) {
+      tIdx = i;
+      document.getElementById('tTrack').style.transform = `translateX(-${i * 100}%)`;
+      document.querySelectorAll('.testi-dot').forEach((d, j) => d.classList.toggle('active', j === i));
+    }
+    function nextT() { goT((tIdx + 1) % 3); }
+    function prevT() { goT((tIdx + 2) % 3); }
+    setInterval(nextT, 5200);
+
+    // Apply URL filter from location cards
+    const urlParam = new URLSearchParams(window.location.search).get('filter');
+    if (urlParam) {
+      window.location.href = 'browse.html?filter=' + urlParam;
+    }
+  </script>
+  <script>
+    function getBookedDates() {
+      try { const s = localStorage.getItem('lgv_booked_dates'); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+    }
+    async function homeCheckAvail() {
+      const dateVal = document.getElementById('homeCheckDate').value;
+      if (!dateVal) return;
+      const result  = document.getElementById('homeCheckResult');
+      const icon    = document.getElementById('homeCheckIcon');
+      const text    = document.getElementById('homeCheckText');
+      const sub     = document.getElementById('homeCheckSub');
+      const altsEl  = document.getElementById('homeCheckAlts');
+      result.style.display = 'block';
+      result.style.background = 'rgba(255,255,255,0.05)';
+      icon.textContent = '⟡'; text.textContent = 'Checking…'; sub.textContent = ''; altsEl.innerHTML = '';
+      const bookedDates = getBookedDates();
+      const isBooked = bookedDates.includes(dateVal);
+      const dateObj = new Date(dateVal + 'T00:00:00');
+      const label = dateObj.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+      if (!isBooked) {
+        result.style.background = 'rgba(80,200,120,0.1)';
+        result.style.border = '1px solid rgba(80,200,120,0.25)';
+        icon.textContent = '✓';
+        text.textContent = 'Available!';
+        sub.textContent = label + ' is free — book it before someone else does.';
+      } else {
+        result.style.background = 'rgba(220,80,80,0.1)';
+        result.style.border = '1px solid rgba(220,80,80,0.25)';
+        icon.textContent = '✕';
+        text.textContent = 'Date Unavailable';
+        sub.textContent = label + ' is already booked. See alternatives below:';
+        // Show nearby available dates
+        const alts = [];
+        for (let i = 1; i <= 60 && alts.length < 3; i++) {
+          const d = new Date(dateObj); d.setDate(d.getDate() + i);
+          const ds = d.toISOString().split('T')[0];
+          if (!bookedDates.includes(ds)) alts.push(ds);
+        }
+        altsEl.innerHTML = alts.map(d => {
+          const l = new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+          return `<button onclick="document.getElementById('homeCheckDate').value='${d}';homeCheckAvail()"
+            style="padding:7px 14px;border:1px solid rgba(255,215,100,0.3);border-radius:8px;background:rgba(255,215,100,0.08);color:#ffd764;font-size:12px;cursor:pointer;font-family:'Jost',sans-serif">${l}</button>`;
+        }).join('');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Browse Venues</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <nav id="mainNav"></nav>
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="page active" id="page-browse">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1467803738586-46b7eb7b16a1?w=1600&q=80')"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content">
+        <h1>Our Venues</h1>
+        <p>Premium wedding venues across Lahore's finest locations.</p>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-inner">
+        <div class="fsearch">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" placeholder="Search venues, locations…" id="vSearch" oninput="filterV()" />
+        </div>
+        <select class="fsel" id="vRegion" onchange="filterV()">
+          <option value="">All Regions</option>
+          <option>Gulberg</option><option>DHA</option><option>Model Town</option>
+          <option>Johar Town</option><option>Bahria Town</option>
+        </select>
+        <select class="fsel" id="vGuests" onchange="filterV()">
+          <option value="">Any Size</option>
+          <option value="50">≤50 guests</option><option value="100">≤100 guests</option>
+          <option value="200">≤200 guests</option><option value="999">500+ guests</option>
+        </select>
+        <select class="fsel" id="vPrice" onchange="filterV()">
+          <option value="">Any Budget</option>
+          <option value="15000">Under €15k</option><option value="25000">Under €25k</option>
+          <option value="50000">Under €50k</option>
+        </select>
+        <span class="filter-count" id="vCount">12 venues</span>
+      </div>
+    </div>
+
+    <div class="vgrid" id="vGrid"></div>
+    <div class="page-footer"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLb()">
+    <button class="lb-close" onclick="closeLb()">✕</button>
+    <img class="lb-img" id="lbImg" src="" alt="" />
+    <div class="lb-caption" id="lbCap"></div>
+  </div>
+
+  <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script src="./asserts/JS/data.js"></script>
+  <script>
+    function renderVenues(filtered) {
+      const d = filtered || VENUES;
+      const g = document.getElementById('vGrid');
+      if (!d.length) {
+        g.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 0"><h3 style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--stone)">No venues found</h3><p style="color:var(--stone);margin-top:12px">Try adjusting your filters</p></div>`;
+        return;
+      }
+      g.innerHTML = d.map(v =>
+        `<div class="vcard">
+          <div class="vcard-img" onclick="lb('${v.img.replace('600','1200')}','${v.name} — ${v.loc}')">
+            ${v.badge ? `<div class="vcard-badge">${v.badge}</div>` : ''}
+            <img src="${v.img}" alt="${v.name}" loading="lazy">
+          </div>
+          <div class="vcard-body">
+            <div class="vcard-loc">${v.loc}</div>
+            <div class="vcard-name">${v.name}</div>
+            <div class="vcard-desc">${v.desc}</div>
+            <div class="vcard-meta">
+              <div class="vcard-price">€${v.price.toLocaleString()} <span>/ venue</span></div>
+              <button class="vcard-btn" onclick="window.location.href='booking.html'">Enquire</button>
+            </div>
+          </div>
+        </div>`
+      ).join('');
+      document.getElementById('vCount').textContent = `${d.length} venue${d.length !== 1 ? 's' : ''}`;
+    }
+
+    function filterV() {
+      const s = document.getElementById('vSearch').value.toLowerCase();
+      const r = document.getElementById('vRegion').value;
+      const g = document.getElementById('vGuests').value;
+      const p = document.getElementById('vPrice').value;
+      renderVenues(VENUES.filter(v =>
+        (!s || v.name.toLowerCase().includes(s) || v.loc.toLowerCase().includes(s)) &&
+        (!r || v.region === r) &&
+        (!g || v.guests <= +g) &&
+        (!p || v.price <= +p)
+      ));
+    }
+
+    // Apply URL query filter (e.g. browse.html?filter=Gulberg)
+    document.addEventListener('DOMContentLoaded', () => {
+      const f = new URLSearchParams(window.location.search).get('filter');
+      if (f) {
+        document.getElementById('vSearch').value = f;
+        filterV();
+      } else {
+        renderVenues();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Venues — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./asserts/Styling/style.css" />
+  <link rel="stylesheet" href="./asserts/Styling/responsive.css" />
+</head>
+<body>
+
+  <!-- No shared nav on admin — it has its own sidebar -->
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div id="adminLoginOverlay" class="admin-modal-overlay" style="display:none" onclick="closeAdminLoginModal(event)">
+    <div class="admin-modal-card">
+      <div class="admin-modal-icon">⚙</div>
+      <h2 class="admin-modal-title">Admin Access</h2>
+      <p class="admin-modal-sub">This area is restricted. Please enter your admin credentials.</p>
+      <div class="auth-msg" id="adminLoginMsg"></div>
+      <div class="auth-field">
+        <label>Admin Email</label>
+        <input type="email" id="adminEmailInp" placeholder="admin@lgv.com" onkeydown="if(event.key==='Enter')adminModalLogin()" />
+      </div>
+      <div class="auth-field">
+        <label>Admin Password</label>
+        <div class="auth-pw-wrap">
+          <input type="password" id="adminPwInp" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminModalLogin()" />
+          <button class="auth-eye" onclick="togglePw('adminPwInp',this)">👁</button>
+        </div>
+      </div>
+      <button class="auth-submit" onclick="adminModalLogin()">Enter Dashboard</button>
+      <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--stone)">
+        Hint: <code>admin@lgv.com</code> / <code>Admin@1234</code>
+      </p>
+      <button class="admin-modal-close" onclick="closeAdminLoginModal()">✕ Cancel</button>
+    </div>
+  </div>
+
+  <div class="page active" id="page-admin">
+    <div class="admin-wrap">
+      <!-- SIDEBAR -->
+      <div class="admin-sidebar">
+        <div style="padding-top:80px">
+          <div class="brand">𝓡 Admin</div>
+          <ul class="admin-nav">
+            <li><a class="active" onclick="switchAdmin('aDash')"     id="anDash">    <span class="aicon">📊</span> Dashboard</a></li>
+            <li><a onclick="switchAdmin('aBookings')"                id="anBookings"><span class="aicon">📋</span> Bookings</a></li>
+            <li><a onclick="switchAdmin('aVenues')"                  id="anVenues">  <span class="aicon">🏛️</span> Venues</a></li>
+            <li><a onclick="switchAdmin('aClients')"                 id="anClients"> <span class="aicon">👥</span> Clients</a></li>
+            <li><a onclick="switchAdmin('aCalendar')"                id="anCalendar"><span class="aicon">📅</span> Booking Calendar</a></li>
+            <li><a onclick="switchAdmin('aSettings')"                id="anSettings"><span class="aicon">⚙️</span> Settings</a></li>
+            <li><a href="index.html" style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px"><span class="aicon">←</span> Back to Site</a></li>
+            <li><a onclick="adminLogout()" style="color:#f08080;margin-top:8px"><span class="aicon">🔒</span> Admin Logout</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="admin-main">
+
+        <!-- DASHBOARD -->
+        <div class="admin-panel active" id="aDash">
+          <div class="admin-topbar">
+            <h1>Dashboard</h1>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="font-size:13px;color:var(--stone)" id="dashDate"></span>
+              <button class="btn btn-dk btn-sm" onclick="switchAdmin('aBookings')">+ New Booking</button>
+            </div>
+          </div>
+          <div class="stat-cards">
+            <div class="stat-card"><div class="stat-val" id="statBookings">—</div><div class="stat-lbl">Total Bookings</div><div class="stat-change">↑ 12% this month</div></div>
+            <div class="stat-card"><div class="stat-val" id="statVenues">—</div><div class="stat-lbl">Active Venues</div><div class="stat-change">Live from database</div></div>
+            <div class="stat-card"><div class="stat-val">98%</div><div class="stat-lbl">Satisfaction</div><div class="stat-change">↑ 2% this month</div></div>
+          </div>
+          <div class="admin-card">
+            <h3>Recent Bookings</h3>
+            <table class="admin-table" id="dashRecentTable"></table>
+          </div>
+        </div>
+
+        <!-- BOOKINGS -->
+        <div class="admin-panel" id="aBookings" style="display:none">
+          <div class="admin-topbar"><h1>All Bookings</h1></div>
+          <div class="admin-card">
+            <div class="admin-filters">
+              <input class="admin-filter-inp" placeholder="Search by name, venue…" id="admSearchBk" oninput="renderBookingsTable()" />
+              <select class="admin-filter-inp" id="admStatusF" onchange="renderBookingsTable()">
+                <option value="">All Statuses</option><option>Confirmed</option><option>Pending</option><option>Cancelled</option>
+              </select>
+              <input class="admin-filter-inp" type="month" id="admMonthF" onchange="renderBookingsTable()" />
+              <span id="admCount" style="font-size:13px;color:var(--stone);margin-left:auto"></span>
+            </div>
+            <table class="admin-table" id="adminBookingsTable">
+              <thead><tr><th>ID</th><th>Client Name</th><th>Email</th><th>Wedding Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="bookingsTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:20px">Connecting to database…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VENUES -->
+        <div class="admin-panel" id="aVenues" style="display:none">
+          <div class="admin-topbar">
+            <h1>Venue Management</h1>
+            <button class="btn btn-dk btn-sm" onclick="openAddVenueModal()">+ Add Venue</button>
+          </div>
+          <div class="admin-card">
+            <table class="admin-table" id="adminVenueTable"></table>
+          </div>
+        </div>
+
+        <!-- CLIENTS -->
+        <div class="admin-panel" id="aClients" style="display:none">
+          <div class="admin-topbar"><h1>Client List</h1></div>
+          <div class="admin-card">
+            <div class="admin-filters">
+              <input class="admin-filter-inp" placeholder="Search clients…" id="admSearchCl" oninput="renderClientsTable()" />
+            </div>
+            <table class="admin-table" id="adminClientsTable">
+              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+              <tbody id="clientTableBody">
+                <tr><td colspan="5" style="text-align:center">Loading database…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- BOOKING CALENDAR MANAGEMENT -->
+        <div class="admin-panel" id="aCalendar" style="display:none">
+          <div class="admin-topbar">
+            <h1>Booking Calendar</h1>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="font-size:13px;color:var(--stone)" id="calAdminStatus">Manage which dates are booked</span>
+              <button class="btn btn-dk btn-sm" onclick="saveAdminDates()">💾 Save Changes</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <h3 style="margin-bottom:4px">Date Availability Manager</h3>
+            <p style="font-size:13px;color:var(--stone);margin-bottom:24px">Click on any date to toggle it between Available and Booked. Red = Booked, White = Available. Changes are saved to the system and reflected on the booking page immediately.</p>
+            
+            <!-- AI Helper -->
+            <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;padding:22px 26px;margin-bottom:28px;border:1px solid rgba(255,215,100,0.18)">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:36px;height:36px;background:linear-gradient(135deg,#ffd764,#f0a500);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">✦</div>
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#ffd764">AI Booking Advisor</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase">Ask me about scheduling</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px">
+                <input id="adminAiQ" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:white;font-family:'Jost',sans-serif;font-size:13px;outline:none" placeholder="e.g. Which weekends in June are still available?" onkeydown="if(event.key==='Enter')askAdminAI()" />
+                <button onclick="askAdminAI()" style="background:linear-gradient(135deg,#ffd764,#f0a500);border:none;border-radius:8px;padding:10px 18px;cursor:pointer;font-family:'Jost',sans-serif;font-weight:600;font-size:13px">Ask AI</button>
+              </div>
+              <div id="adminAiResp" style="margin-top:14px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.7;font-family:'Jost',sans-serif;min-height:20px"></div>
+            </div>
+
+            <!-- Calendar Navigation -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <button onclick="adminCalChange(-1)" style="background:var(--cream);border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px;font-weight:500">← Previous</button>
+              <div style="text-align:center">
+                <div id="adminCalTitle" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600"></div>
+                <div id="adminCalBookedCount" style="font-size:12px;color:var(--stone);margin-top:2px"></div>
+              </div>
+              <button onclick="adminCalChange(1)"  style="background:var(--cream);border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px;font-weight:500">Next →</button>
+            </div>
+
+            <div id="adminCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px"></div>
+
+            <!-- Legend -->
+            <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:24px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--stone)">
+                <div style="width:16px;height:16px;border-radius:4px;background:linear-gradient(135deg,#c0392b,#e74c3c)"></div>Booked (click to free)
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--stone)">
+                <div style="width:16px;height:16px;border-radius:4px;background:#f0fff4;border:1px solid #7ee8a2"></div>Available (click to book)
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--stone)">
+                <div style="width:16px;height:16px;border-radius:4px;border:2px solid var(--gold)"></div>Today
+              </div>
+            </div>
+
+            <!-- Booked Dates List -->
+            <div style="border-top:1px solid rgba(0,0,0,0.06);padding-top:24px">
+              <h4 style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:14px">All Booked Dates</h4>
+              <div id="adminBookedList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="admin-panel" id="aSettings" style="display:none">
+          <div class="admin-topbar"><h1>System Settings</h1></div>
+          <div class="admin-card">
+            <h3>General</h3>
+            <div style="display:flex;flex-direction:column;gap:18px;margin-top:8px">
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Site Name</label><input class="finp" value="Smart Venues Wedding Venues" /></div>
+                <div class="fgrp"><label class="flbl">Support Email</label><input class="finp" type="email" value="hello@smartvenues.com" /></div>
+              </div>
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Deposit %</label><input class="finp" type="number" value="20" /></div>
+                <div class="fgrp">
+                  <label class="flbl">Default Currency</label>
+                  <select class="fsel2"><option>PKR (₨)</option><option>EUR (€)</option><option>GBP (£)</option><option>USD ($)</option></select>
+                </div>
+              </div>
+              <button class="fsub" style="width:auto;padding:13px 32px" onclick="alert('Settings saved!')">Save Settings</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /admin-main -->
+    </div><!-- /admin-wrap -->
+  </div>
+
+  <script src="./asserts/JS/shared.js"></script>
+  <script src="./asserts/JS/data.js"></script>
+  <script>
+    const API_BASE       = 'http://localhost:5000/api';
+    const ADMIN_EMAIL    = 'admin@lgv.com';
+    const ADMIN_PASSWORD = 'Admin@1234';
+
+    // ── Auth gate ──
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!isAdminLoggedIn()) {
+        openAdminLoginModal();
+      } else {
+        initDashboard();
+      }
+      document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US', { month:'long', year:'numeric' });
+    });
+
+    function openAdminLoginModal() {
+      document.getElementById('adminLoginOverlay').style.display = 'flex';
+      setTimeout(() => document.getElementById('adminEmailInp').focus(), 100);
+    }
+    function closeAdminLoginModal(e) {
+      if (e && e.target !== document.getElementById('adminLoginOverlay')) return;
+      document.getElementById('adminLoginOverlay').style.display = 'none';
+      if (!isAdminLoggedIn()) window.location.href = 'index.html';
+    }
+    function adminModalLogin() {
+      const email = document.getElementById('adminEmailInp').value.trim();
+      const pw    = document.getElementById('adminPwInp').value;
+      if (email.toLowerCase() !== ADMIN_EMAIL || pw !== ADMIN_PASSWORD) {
+        showMsg('adminLoginMsg','✗ Invalid admin credentials.','error');
+        document.getElementById('adminPwInp').value = '';
+        return;
+      }
+      localStorage.setItem(ADMIN_KEY, 'true');
+      document.getElementById('adminLoginOverlay').style.display = 'none';
+      toast('✓ Admin access granted. Welcome!');
+      initDashboard();
+    }
+    function adminLogout() {
+      localStorage.removeItem(ADMIN_KEY);
+      toast('Admin session ended.');
+      setTimeout(() => window.location.href = 'index.html', 800);
+    }
+
+    // ── Panel switching ──
+    function switchAdmin(panelId) {
+      document.querySelectorAll('.admin-panel').forEach(p => p.style.display = 'none');
+      document.getElementById(panelId).style.display = 'block';
+      document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+      const key = 'an' + panelId.replace(/^a/, '').replace(/^\w/, c => c.toUpperCase());
+      const el  = document.getElementById('an' + panelId.replace(/^a/, ''));
+      if (el) el.classList.add('active');
+      if (panelId === 'aBookings') renderBookingsTable();
+      if (panelId === 'aClients')  renderClientsTable();
+      if (panelId === 'aVenues')   renderAdminVenues();
+    }
+
+    function initDashboard() {
+      renderDashRecent();
+      fetchVenueCount();
+    }
+
+    async function fetchVenueCount() {
+      try {
+        const res  = await fetch(`${API_BASE}/venues/all`);
+        const data = await res.json();
+        const el = document.getElementById('statVenues');
+        if (el) el.textContent = Array.isArray(data) ? data.length : '—';
+      } catch {
+        // keep showing —
+      }
+    }
+
+    // ── Bookings ──
+    async function renderBookingsTable() {
+      const tbody = document.getElementById('bookingsTableBody');
+      const s   = (document.getElementById('admSearchBk') || {}).value?.toLowerCase() || '';
+      const sf  = (document.getElementById('admStatusF')  || {}).value || '';
+      try {
+        const res  = await fetch(`${API_BASE}/bookings`);
+        const data = await res.json();
+        const filtered = data.filter(b =>
+          (!s  || (b.client_name||'').toLowerCase().includes(s) || (b.client_email||'').toLowerCase().includes(s)) &&
+          (!sf || b.status === sf.toLowerCase())
+        );
+        tbody.innerHTML = filtered.length
+          ? filtered.map(b => `<tr>
+              <td>#${b.id}</td>
+              <td><strong>${b.client_name||'N/A'}</strong></td>
+              <td>${b.client_email||'N/A'}</td>
+              <td>${b.wedding_date ? b.wedding_date.split('T')[0] : 'N/A'}</td>
+              <td><span class="status-badge status-${(b.status||'pending').toLowerCase()}">${b.status}</span></td>
+              <td><button onclick="deleteBooking(${b.id})" style="color:red;background:none;border:none;cursor:pointer;font-weight:bold">Cancel</button></td>
+            </tr>`).join('')
+          : '<tr><td colspan="6" style="text-align:center">No bookings found.</td></tr>';
+        const cnt = document.getElementById('admCount');
+        if (cnt) cnt.textContent = `${filtered.length} bookings`;
+        document.getElementById('statBookings').textContent = data.length;
+      } catch {
+        // fallback to static data
+        tbody.innerHTML = BOOKINGS.map(b => `<tr>
+          <td>${b.id}</td><td><strong>${b.client}</strong></td><td>—</td><td>${b.date}</td>
+          <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+          <td><button style="color:var(--stone);background:none;border:none;cursor:pointer">—</button></td>
+        </tr>`).join('');
+        document.getElementById('statBookings').textContent = BOOKINGS.length;
+      }
+    }
+
+    async function deleteBooking(id) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${id}`, { method:'DELETE' });
+        if (res.ok) { toast('Booking cancelled.'); renderBookingsTable(); }
+      } catch { alert('Failed to delete booking.'); }
+    }
+
+    // ── Clients ──
+    async function renderClientsTable() {
+      const tbody = document.getElementById('clientTableBody');
+      const s = (document.getElementById('admSearchCl') || {}).value?.toLowerCase() || '';
+      try {
+        const res   = await fetch(`${API_BASE}/auth/users`);
+        const users = await res.json();
+        const filtered = users.filter(u =>
+          !s || u.full_name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s)
+        );
+        tbody.innerHTML = filtered.map(u => `<tr>
+          <td>#${u.id}</td>
+          <td><strong>${u.full_name}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="badge" style="background:#d4af37;color:white;padding:2px 8px;border-radius:4px">${u.role}</span></td>
+          <td><button onclick="deleteUser(${u.id})" style="color:#f08080;background:none;border:none;cursor:pointer;font-weight:bold">Delete</button></td>
+        </tr>`).join('');
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="5" style="color:var(--stone);text-align:center">Backend not connected — no client data.</td></tr>';
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Delete this user?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/auth/users/${id}`, { method:'DELETE' });
+        if (res.ok) { toast('User deleted.'); renderClientsTable(); }
+      } catch { alert('Failed to delete user.'); }
+    }
+
+    // ── Venues — Fetch from Database ──
+    async function renderAdminVenues() {
+      const tbl = document.getElementById('adminVenueTable');
+      tbl.innerHTML = `<thead><tr><th>Venue</th><th>Region</th><th>Location</th><th>Max Guests</th><th>Price (PKR)</th><th>Badge</th><th>Actions</th></tr></thead><tbody><tr><td colspan="7" style="text-align:center;padding:20px;color:#888">Loading venues from database…</td></tr></tbody>`;
+      try {
+        const res  = await fetch(`${API_BASE}/venues/all`);
+        const rows = await res.json();
+        if (!rows.length) {
+          tbl.querySelector('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No venues found. Add your first venue!</td></tr>';
+          return;
+        }
+        tbl.innerHTML = `<thead><tr><th>Venue</th><th>Region</th><th>Location</th><th>Max Guests</th><th>Price (PKR)</th><th>Badge</th><th>Actions</th></tr></thead><tbody>` +
+          rows.map(v => `<tr>
+            <td style="font-family:'Cormorant Garamond',serif;font-size:17px">${v.name}</td>
+            <td>${v.region || '—'}</td>
+            <td style="font-size:13px;color:#888">${v.location || '—'}</td>
+            <td>${(v.capacity||v.max_guests||0).toLocaleString()}</td>
+            <td>PKR ${(v.price||0).toLocaleString()}</td>
+            <td>${v.badge ? `<span class="status-badge status-confirmed">${v.badge}</span>` : '—'}</td>
+            <td>
+              <button class="admin-action-btn" style="background:#fce4e4;color:#c62828" onclick="deleteVenue(${v.id},'${v.name.replace(/'/g,"\\'")}')">Delete</button>
+            </td>
+          </tr>`).join('') + '</tbody>';
+      } catch (e) {
+        tbl.querySelector('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#c62828">Failed to connect to backend. Is the server running?</td></tr>';
+      }
+    }
+
+    async function deleteVenue(id, name) {
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/venues/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) { toast('Venue deleted'); renderAdminVenues(); }
+        else alert(data.error || 'Failed to delete venue');
+      } catch { alert('Connection error'); }
+    }
+
+    function openAddVenueModal() {
+      ['vnName','vnRegion','vnLocation','vnGuests','vnPrice','vnBadge','vnDesc','vnImg'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      document.getElementById('addVenueMsg').innerHTML = '';
+      document.getElementById('addVenueModal').style.display = 'block';
+    }
+
+    function closeAddVenueModal() {
+      document.getElementById('addVenueModal').style.display = 'none';
+    }
+
+    async function submitAddVenue() {
+      const name      = document.getElementById('vnName').value.trim();
+      const region    = document.getElementById('vnRegion').value.trim();
+      const location  = document.getElementById('vnLocation').value.trim();
+      const capacity  = parseInt(document.getElementById('vnGuests').value) || 500;
+      const price     = parseFloat(document.getElementById('vnPrice').value) || 0;
+      const badge     = document.getElementById('vnBadge').value.trim();
+      const description = document.getElementById('vnDesc').value.trim();
+      const image_url = document.getElementById('vnImg').value.trim();
+      const msgEl     = document.getElementById('addVenueMsg');
+
+      if (!name) { msgEl.innerHTML = '<div style="color:#c62828;font-size:13px;padding:8px 0">⚠ Venue name is required.</div>'; return; }
+      if (!region) { msgEl.innerHTML = '<div style="color:#c62828;font-size:13px;padding:8px 0">⚠ Region is required.</div>'; return; }
+
+      try {
+        const res  = await fetch(`${API_BASE}/venues`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, region, location, capacity, price, badge, description, image_url })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          closeAddVenueModal();
+          toast('✓ Venue "' + name + '" added successfully!');
+          renderAdminVenues();
+        } else {
+          msgEl.innerHTML = `<div style="color:#c62828;font-size:13px;padding:8px 0">✗ ${data.error || 'Failed to add venue.'}</div>`;
+        }
+      } catch {
+        msgEl.innerHTML = '<div style="color:#c62828;font-size:13px;padding:8px 0">✗ Connection failed. Is backend running?</div>';
+      }
+    }
+
+    function renderDashRecent() {
+      const tbl = document.getElementById('dashRecentTable'); if (!tbl) return;
+      tbl.innerHTML = `<thead><tr><th>Client</th><th>Venue</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>` +
+        BOOKINGS.slice(0,5).map(b => `<tr>
+          <td>${b.client}</td><td>${b.venue}</td><td>${b.date}</td>
+          <td style="font-family:'Cormorant Garamond',serif;font-size:18px">${b.amount}</td>
+          <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+        </tr>`).join('') + '</tbody>';
+    }
+
+    // ═══════════ BOOKING CALENDAR ADMIN ═══════════
+
+    let adminCalYear = new Date().getFullYear();
+    let adminCalMonth = new Date().getMonth();
+
+    function getAdminBookedDates() {
+      try {
+        const stored = localStorage.getItem('lgv_booked_dates');
+        if (stored) return JSON.parse(stored);
+      } catch(e) {}
+      // Default dates
+      const now = new Date();
+      const yr = now.getFullYear();
+      const mo = String(now.getMonth() + 1).padStart(2,'0');
+      return [
+        `${yr}-${mo}-05`, `${yr}-${mo}-08`, `${yr}-${mo}-14`,
+        `${yr}-${mo}-19`, `${yr}-${mo}-22`, `${yr}-${mo}-27`
+      ];
+    }
+
+    let adminBookedDates = getAdminBookedDates();
+
+    async function saveAdminDates() {
+      // Save to localStorage (immediate, works offline)
+      localStorage.setItem('lgv_booked_dates', JSON.stringify(adminBookedDates));
+      renderAdminCal();
+      renderAdminBookedList();
+
+      // Also sync to backend DB (non-blocking)
+      try {
+        await fetch(`${API_BASE}/hall/admin/bulk-update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dates: adminBookedDates })
+        });
+      } catch(e) { console.warn('Backend sync skipped (offline mode)'); }
+
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✅ Saved!';
+      btn.style.background = '#7ee8a2';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+    }
+
+    function adminCalChange(d) {
+      adminCalMonth += d;
+      if (adminCalMonth > 11) { adminCalMonth = 0; adminCalYear++; }
+      if (adminCalMonth < 0)  { adminCalMonth = 11; adminCalYear--; }
+      renderAdminCal();
+    }
+
+    function toggleAdminDate(dateStr) {
+      const idx = adminBookedDates.indexOf(dateStr);
+      if (idx > -1) {
+        adminBookedDates.splice(idx, 1);
+      } else {
+        adminBookedDates.push(dateStr);
+        adminBookedDates.sort();
+      }
+      // Auto-save
+      localStorage.setItem('lgv_booked_dates', JSON.stringify(adminBookedDates));
+      renderAdminCal();
+      renderAdminBookedList();
+    }
+
+    function renderAdminCal() {
+      const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const titleEl = document.getElementById('adminCalTitle');
+      const countEl = document.getElementById('adminCalBookedCount');
+      const grid = document.getElementById('adminCalGrid');
+      if (!titleEl || !grid) return;
+
+      titleEl.textContent = `${mn[adminCalMonth]} ${adminCalYear}`;
+      
+      // Count booked days in this month
+      const monthStr = `${adminCalYear}-${String(adminCalMonth+1).padStart(2,'0')}`;
+      const bookedInMonth = adminBookedDates.filter(d => d.startsWith(monthStr)).length;
+      const daysInMonth = new Date(adminCalYear, adminCalMonth+1, 0).getDate();
+      countEl.textContent = `${bookedInMonth} booked · ${daysInMonth - bookedInMonth} available`;
+
+      const first = new Date(adminCalYear, adminCalMonth, 1).getDay();
+      const days  = new Date(adminCalYear, adminCalMonth + 1, 0).getDate();
+      const today = new Date();
+
+      let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d =>
+        `<div style="text-align:center;font-size:11px;letter-spacing:1px;color:var(--stone);padding:6px 0;text-transform:uppercase">${d}</div>`
+      ).join('');
+
+      for (let i = 0; i < first; i++) html += `<div></div>`;
+
+      for (let d = 1; d <= days; d++) {
+        const dateStr = `${adminCalYear}-${String(adminCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isBooked = adminBookedDates.includes(dateStr);
+        const isToday = d === today.getDate() && adminCalMonth === today.getMonth() && adminCalYear === today.getFullYear();
+
+        const styles = isBooked
+          ? 'background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-weight:700;box-shadow:0 2px 8px rgba(200,50,50,0.3)'
+          : 'background:#f0fff4;border:1px solid rgba(126,232,162,0.3);color:#2d6a4f';
+
+        const todayStyle = isToday ? 'outline:2px solid var(--gold);outline-offset:2px;' : '';
+
+        html += `<div onclick="toggleAdminDate('${dateStr}')" 
+          title="${isBooked ? 'Click to mark as Available' : 'Click to mark as Booked'}"
+          style="text-align:center;padding:10px 4px;border-radius:8px;font-size:13px;cursor:pointer;
+                 transition:all 0.2s;user-select:none;${styles};${todayStyle}">
+          ${d}
+          ${isBooked ? '<br><span style="font-size:9px;opacity:0.8;letter-spacing:0.5px">BOOKED</span>' : ''}
+        </div>`;
+      }
+
+      grid.innerHTML = html;
+      renderAdminBookedList();
+    }
+
+    function renderAdminBookedList() {
+      const el = document.getElementById('adminBookedList');
+      if (!el) return;
+      if (adminBookedDates.length === 0) {
+        el.innerHTML = '<span style="color:var(--stone);font-size:13px">No dates currently booked.</span>';
+        return;
+      }
+      el.innerHTML = [...adminBookedDates].sort().map(d => {
+        const dObj = new Date(d + 'T00:00:00');
+        const label = dObj.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+        return `<div style="display:flex;align-items:center;gap:8px;background:#fff5f5;border:1px solid #ffd0d0;border-radius:8px;padding:8px 14px;font-size:13px;font-family:'Jost',sans-serif">
+          <span style="color:#c0392b;font-weight:600">${label}</span>
+          <button onclick="toggleAdminDate('${d}')" title="Remove booking" 
+            style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;line-height:1;padding:0 4px">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Admin AI Advisor ──
+    async function askAdminAI() {
+      const question = document.getElementById('adminAiQ').value.trim();
+      if (!question) return;
+      const respEl = document.getElementById('adminAiResp');
+      respEl.textContent = '⟡ Thinking…';
+
+      const bookedDates = adminBookedDates;
+      const now = new Date();
+      const prompt = `You are a booking calendar assistant for Smart Venues, a premium wedding venue.
+
+Current date: ${now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}
+Booked dates (YYYY-MM-DD): ${JSON.stringify(bookedDates)}
+
+Admin question: "${question}"
+
+Provide a helpful, concise answer. If they ask about available dates, list specific dates. If scheduling advice, be practical. Keep it under 100 words.`;
+
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1000,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+        const data = await res.json();
+        respEl.textContent = data.content?.[0]?.text || 'Unable to get response.';
+      } catch(e) {
+        respEl.textContent = 'AI temporarily unavailable. Please check your connection.';
+      }
+    }
+
+    // Initialize calendar when panel is opened — fetch from backend first
+    const origSwitch = window.switchAdmin;
+    window.switchAdmin = async function(panelId) {
+      if (typeof origSwitch === 'function') origSwitch(panelId);
+      if (panelId === 'aCalendar') {
+        // Try fetching latest from backend
+        try {
+          const res = await fetch(`${API_BASE}/hall/booked-dates`);
+          const data = await res.json();
+          if (data.bookedDates && Array.isArray(data.bookedDates)) {
+            adminBookedDates = data.bookedDates;
+            localStorage.setItem('lgv_booked_dates', JSON.stringify(adminBookedDates));
+          } else {
+            adminBookedDates = getAdminBookedDates();
+          }
+        } catch(e) {
+          adminBookedDates = getAdminBookedDates(); // fallback to localStorage
+        }
+        setTimeout(renderAdminCal, 100);
+      }
+    };
+
+  </script>
+
+  <!-- ══ ADD VENUE MODAL ══ -->
+  <div id="addVenueModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;overflow-y:auto;padding:40px 16px">
+    <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;padding:36px;position:relative">
+      <button onclick="closeAddVenueModal()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#888">✕</button>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:24px;color:#2a2a2a">Add New Venue</h2>
+      <div id="addVenueMsg" style="margin-bottom:12px"></div>
+      <div style="display:grid;gap:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Venue Name *</label><input id="vnName" placeholder="Pearl Continental Banquet" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+          <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Region *</label><input id="vnRegion" placeholder="Gulberg" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+        </div>
+        <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Location / Address</label><input id="vnLocation" placeholder="MM Alam Road, Lahore" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Max Guests</label><input id="vnGuests" type="number" placeholder="500" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+          <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Price (PKR/head)</label><input id="vnPrice" type="number" placeholder="4500" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+          <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Badge</label><input id="vnBadge" placeholder="Luxury / Premium" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+        </div>
+        <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Description</label><textarea id="vnDesc" rows="3" placeholder="Describe the venue…" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;resize:vertical;box-sizing:border-box"></textarea></div>
+        <div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Image URL</label><input id="vnImg" placeholder="https://images.unsplash.com/…" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box" /></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end">
+        <button onclick="closeAddVenueModal()" style="padding:10px 22px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-size:14px">Cancel</button>
+        <button onclick="submitAddVenue()" style="padding:10px 28px;background:#2a2a2a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500">Add Venue</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
