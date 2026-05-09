@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <li><a href="hall.html"     data-p="hall">Hall Booking</a></li>
         <li><a href="contact.html"  data-p="contact">Contact</a></li>
         <li><a href="budget.html"  data-p="Budget">Budget</a></li>
+        <li><a href="hallowner_portal.html">Hall Owner Login</a></li>
 
       </ul>
       <div class="nav-actions">
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <a href="booking.html">Book Now</a>
       <a href="admin.html">Admin</a>
       <a href="budget.html">Budget</a>
+      <a href="hallowner_portal.html">Hall Owner Login</a
     `;
     }
 

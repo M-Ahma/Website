@@ -32,11 +32,11 @@ router.get('/check/:date', async (req, res) => {
     try {
         const { date } = req.params;
         const [bookingRows] = await db.query(
-            `SELECT id FROM bookings WHERE DATE(wedding_date) = ? AND status IN ('confirmed','pending') LIMIT 1`,
+            `SELECT TOP 1 id FROM bookings WHERE CAST(wedding_date AS DATE) = ? AND status IN ('confirmed','pending')`,
             [date]
         );
         let manualRows = [];
-        try { [manualRows] = await db.query(`SELECT blocked FROM hall_blocked_dates WHERE date = ? LIMIT 1`, [date]); } catch(e) {}
+        try { [manualRows] = await db.query(`SELECT TOP 1 blocked FROM hall_blocked_dates WHERE date = ?`, [date]); } catch(e) {}
 
         const isBooked  = bookingRows.length > 0;
         const isBlocked = manualRows.length > 0 && manualRows[0].blocked == 1;
@@ -69,7 +69,9 @@ router.post('/admin/bulk-update', async (req, res) => {
         if (!Array.isArray(dates)) return res.status(400).json({ error: 'dates must be array' });
         try { await db.query(`DELETE FROM hall_blocked_dates`); } catch(e) {}
         if (dates.length > 0) {
-            await db.query(`INSERT INTO hall_blocked_dates (date, blocked) VALUES ?`, [dates.map(d => [d, 1])]);
+            for (const d of dates) {
+                await db.query(`INSERT INTO hall_blocked_dates (date, blocked) VALUES (?,?)`, [d, 1]);
+            }
         }
         res.json({ message: 'Updated', count: dates.length });
     } catch (error) {

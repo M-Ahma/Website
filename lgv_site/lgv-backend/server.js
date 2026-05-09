@@ -19,16 +19,18 @@ const frontendPath = path.join(__dirname, '..');
 app.use(express.static(frontendPath));
 
 // ── 3. API ROUTES ──
-try {
-    app.use('/api/auth',     require('./src/routes/auth'));
-    app.use('/api/venues',   require('./src/routes/venues'));
-    app.use('/api/bookings', require('./src/routes/bookings'));
-    app.use('/api/contact',  require('./src/routes/contact'));
-    app.use('/api/hall',     require('./src/routes/hall'));
-    app.use('/api/admin',    require('./src/routes/admin'));
-} catch (err) {
-    console.error('❌ ROUTE LOADING ERROR:', err.message);
-}
+   try {
+        app.use('/api/auth',      require('./src/routes/auth'));
+        app.use('/api/venues',    require('./src/routes/venues'));
+        app.use('/api/bookings',  require('./src/routes/bookings'));
+        app.use('/api/contact',   require('./src/routes/contact'));
+        app.use('/api/hall',      require('./src/routes/hall'));
+        app.use('/api/admin',     require('./src/routes/admin'));
+        app.use('/api/hallowner', require('./src/routes/hallowner'));      // NEW
+        app.use('/api/admin',     require('./src/routes/admin_hallowner')); // NEW
+    } catch (err) {
+        console.error('❌ ROUTE LOADING ERROR:', err.message);
+    }
 
 // ── 4. HEALTH CHECK ──
 app.get('/api/health', (req, res) => {

@@ -91,7 +91,9 @@ router.post('/blocked-dates/bulk', async (req, res) => {
 
         await db.query(`DELETE FROM hall_blocked_dates`);
         if (dates.length > 0) {
-            await db.query(`INSERT INTO hall_blocked_dates (date, blocked) VALUES ?`, [dates.map(d => [d, 1])]);
+            for (const d of dates) {
+                await db.query(`INSERT INTO hall_blocked_dates (date, blocked) VALUES (?,?)`, [d, 1]);
+            }
         }
         res.json({ message: 'Blocked dates saved', count: dates.length });
     } catch (err) {

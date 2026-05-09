@@ -51,6 +51,7 @@
             <li><a onclick="switchAdmin('aVenues')"                  id="anVenues">  <span class="aicon">🏛️</span> Venues</a></li>
             <li><a onclick="switchAdmin('aClients')"                 id="anClients"> <span class="aicon">👥</span> Clients</a></li>
             <li><a onclick="switchAdmin('aCalendar')"                id="anCalendar"><span class="aicon">📅</span> Booking Calendar</a></li>
+              <li><a onclick="switchAdmin('aHallOwners')"            id="anHallOwners"><span class="aicon">🏛️</span> Hall Owners</a></li>
             <li><a onclick="switchAdmin('aSettings')"                id="anSettings"><span class="aicon">⚙️</span> Settings</a></li>
             <li><a href="index.html" style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px"><span class="aicon">←</span> Back to Site</a></li>
             <li><a onclick="adminLogout()" style="color:#f08080;margin-top:8px"><span class="aicon">🔒</span> Admin Logout</a></li>
@@ -213,6 +214,126 @@
           </div>
         </div>
 
+        <!-- ═══ HALL OWNERS PANEL ═══ -->
+        <div class="admin-panel" id="aHallOwners" style="display:none">
+          <div class="admin-topbar">
+            <h1>Hall Owners Management</h1>
+            <button class="btn btn-dk btn-sm" onclick="openAddOwnerModal()">+ Add Hall Owner</button>
+          </div>
+
+          <!-- Stats Row -->
+          <div class="stat-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+            <div class="stat-card"><div class="stat-val" id="hoStatOwners">—</div><div class="stat-lbl">Total Owners</div></div>
+            <div class="stat-card"><div class="stat-val" id="hoStatActive">—</div><div class="stat-lbl">Active Owners</div></div>
+            <div class="stat-card"><div class="stat-val" id="hoStatRevenue">—</div><div class="stat-lbl">Subscription Revenue</div></div>
+            <div class="stat-card"><div class="stat-val" id="hoStatNotifs">—</div><div class="stat-lbl">Unread Notifications</div></div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="admin-card" style="margin-bottom:24px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <h3>🔔 Recent Activity / Notifications</h3>
+              <button class="btn btn-sm" onclick="markAllNotifsRead()" style="background:rgba(255,255,255,0.1);color:rgb(8, 8, 8);border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px">Mark All Read</button>
+            </div>
+            <div id="hoNotifList" style="display:flex;flex-direction:column;gap:10px;max-height:220px;overflow-y:auto">
+              <div style="color:var(--stone);font-size:13px">Loading notifications…</div>
+            </div>
+          </div>
+
+          <!-- Hall Owners Table -->
+          <div class="admin-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <h3>Registered Hall Owners</h3>
+              <input class="admin-filter-inp" placeholder="Search owners…" id="hoSearch" oninput="renderHallOwnersTable()" style="width:220px" />
+            </div>
+            <div style="overflow-x:auto">
+              <table class="admin-table" id="hoTable">
+                <thead><tr>
+                  <th>Owner</th><th>Business</th><th>Email</th><th>Venues</th>
+                  <th>Subscription</th><th>Expires</th><th>Status</th><th>Actions</th>
+                </tr></thead>
+                <tbody><tr><td colspan="8" style="text-align:center;padding:20px;color:#888">Loading hall owners…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Subscription Revenue -->
+          <div class="admin-card" style="margin-top:24px">
+            <h3>💰 Subscription Revenue Summary</h3>
+            <div id="hoRevenueSummary" style="margin-top:12px;color:var(--stone);font-size:13px">Loading…</div>
+          </div>
+        </div>
+
+        <!-- ═══ ADD HALL OWNER MODAL ═══ -->
+        <div id="hoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:none;align-items:center;justify-content:center">
+          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto">
+            <h2 style="color:white;margin:0 0 24px;font-family:'Cormorant Garamond',serif">Add Hall Owner</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Full Name *</label><input class="finp" id="hoFullName" placeholder="Muhammad Ali" /></div>
+                <div class="fgrp"><label class="flbl">Username *</label><input class="finp" id="hoUsername" placeholder="ali_marquee" /></div>
+              </div>
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Email *</label><input class="finp" id="hoEmail" type="email" placeholder="ali@marquee.com" /></div>
+                <div class="fgrp"><label class="flbl">Phone</label><input class="finp" id="hoPhone" placeholder="03xx-xxxxxxx" /></div>
+              </div>
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Business Name</label><input class="finp" id="hoBusinessName" placeholder="Ali Grand Marquee" /></div>
+                <div class="fgrp"><label class="flbl">Password *</label><input class="finp" id="hoPassword" type="password" placeholder="Min 6 chars" /></div>
+              </div>
+              <div id="hoModalMsg" style="color:#f87171;font-size:13px;display:none"></div>
+              <div style="display:flex;gap:10px;margin-top:8px">
+                <button class="fsub" style="flex:1" onclick="submitAddOwner()">Create Owner</button>
+                <button onclick="closeOwnerModal()" style="flex:1;background:rgba(255,255,255,0.08);color:white;border:none;border-radius:10px;padding:14px;cursor:pointer;font-size:14px">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ ASSIGN VENUE MODAL ═══ -->
+        <div id="hoVenueModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center">
+          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:440px;max-width:95vw">
+            <h2 style="color:white;margin:0 0 16px;font-family:'Cormorant Garamond',serif">Assign Venue</h2>
+            <p id="hoVenueOwnerName" style="color:var(--stone);margin:0 0 16px;font-size:13px"></p>
+            <select id="hoVenueSelect" class="fsel2" style="width:100%;margin-bottom:16px">
+              <option value="">-- Select a venue --</option>
+            </select>
+            <div id="hoVenueList" style="margin-bottom:16px;font-size:13px;color:rgba(255,255,255,0.7)"></div>
+            <div style="display:flex;gap:10px">
+              <button class="fsub" style="flex:1" onclick="submitAssignVenue()">Assign Venue</button>
+              <button onclick="closeVenueModal()" style="flex:1;background:rgba(255,255,255,0.08);color:white;border:none;border-radius:10px;padding:14px;cursor:pointer;font-size:14px">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SUBSCRIPTION MODAL ═══ -->
+        <div id="hoSubModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center">
+          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:480px;max-width:95vw">
+            <h2 style="color:white;margin:0 0 16px;font-family:'Cormorant Garamond',serif">Add Subscription</h2>
+            <p id="hoSubOwnerName" style="color:var(--stone);margin:0 0 16px;font-size:13px"></p>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Plan</label>
+                  <select class="fsel2" id="hoSubPlan"><option>Basic</option><option>Standard</option><option>Premium</option></select>
+                </div>
+                <div class="fgrp"><label class="flbl">Amount (PKR)</label><input class="finp" id="hoSubAmount" type="number" placeholder="5000" /></div>
+              </div>
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Start Date</label><input class="finp" id="hoSubStart" type="date" /></div>
+                <div class="fgrp"><label class="flbl">End Date</label><input class="finp" id="hoSubEnd" type="date" /></div>
+              </div>
+              <div class="frow">
+                <div class="fgrp"><label class="flbl">Payment Method</label><input class="finp" id="hoSubMethod" placeholder="JazzCash / Bank Transfer" /></div>
+                <div class="fgrp"><label class="flbl">Ref / TxID</label><input class="finp" id="hoSubRef" placeholder="TXN-123" /></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:4px">
+                <button class="fsub" style="flex:1" onclick="submitAddSubscription()">Save Subscription</button>
+                <button onclick="closeSubModal()" style="flex:1;background:rgba(255,255,255,0.08);color:white;border:none;border-radius:10px;padding:14px;cursor:pointer;font-size:14px">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /admin-main -->
     </div><!-- /admin-wrap -->
   </div>
@@ -243,21 +364,54 @@
       document.getElementById('adminLoginOverlay').style.display = 'none';
       if (!isAdminLoggedIn()) window.location.href = 'index.html';
     }
-    function adminModalLogin() {
+    async function adminModalLogin() {
       const email = document.getElementById('adminEmailInp').value.trim();
       const pw    = document.getElementById('adminPwInp').value;
-      if (email.toLowerCase() !== ADMIN_EMAIL || pw !== ADMIN_PASSWORD) {
-        showMsg('adminLoginMsg','✗ Invalid admin credentials.','error');
-        document.getElementById('adminPwInp').value = '';
-        return;
+      if (!email || !pw) { showMsg('adminLoginMsg','⚠ Enter email and password.','error'); return; }
+
+      // Try real backend login first to get JWT token
+      try {
+        const res  = await fetch(API_BASE + '/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: pw })
+        });
+        const data = await res.json();
+        if (res.ok && data.user && data.user.role === 'admin') {
+          // Save real JWT so Hall Owners and protected routes work
+          localStorage.setItem('lgv_jwt', data.token);
+          localStorage.setItem('token', data.token);
+          localStorage.setItem(ADMIN_KEY, 'true');
+          document.getElementById('adminLoginOverlay').style.display = 'none';
+          toast('✓ Welcome, ' + (data.user.name || 'Admin') + '!');
+          initDashboard();
+          return;
+        } else if (res.ok && data.user && data.user.role !== 'admin') {
+          showMsg('adminLoginMsg','✗ This account is not an admin.','error');
+          document.getElementById('adminPwInp').value = '';
+          return;
+        } else {
+          showMsg('adminLoginMsg','✗ ' + (data.message || 'Invalid credentials.'), 'error');
+          document.getElementById('adminPwInp').value = '';
+          return;
+        }
+      } catch (err) {
+        // Backend offline — fall back to hardcoded local check
+        if (email.toLowerCase() !== ADMIN_EMAIL || pw !== ADMIN_PASSWORD) {
+          showMsg('adminLoginMsg','✗ Invalid credentials.','error');
+          document.getElementById('adminPwInp').value = '';
+          return;
+        }
+        localStorage.setItem(ADMIN_KEY, 'true');
+        document.getElementById('adminLoginOverlay').style.display = 'none';
+        toast('✓ Admin access granted (offline mode).');
+        initDashboard();
       }
-      localStorage.setItem(ADMIN_KEY, 'true');
-      document.getElementById('adminLoginOverlay').style.display = 'none';
-      toast('✓ Admin access granted. Welcome!');
-      initDashboard();
     }
     function adminLogout() {
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem('lgv_jwt');
+      localStorage.removeItem('token');
       toast('Admin session ended.');
       setTimeout(() => window.location.href = 'index.html', 800);
     }
@@ -282,7 +436,7 @@
 
     async function fetchVenueCount() {
       try {
-        const res  = await fetch(`${API_BASE}/venues/all`);
+        const res  = await fetch(`${API_BASE}/venues/all`, { headers: authHeaders() });
         const data = await res.json();
         const el = document.getElementById('statVenues');
         if (el) el.textContent = Array.isArray(data) ? data.length : '—';
@@ -297,7 +451,7 @@
       const s   = (document.getElementById('admSearchBk') || {}).value?.toLowerCase() || '';
       const sf  = (document.getElementById('admStatusF')  || {}).value || '';
       try {
-        const res  = await fetch(`${API_BASE}/bookings`);
+        const res  = await fetch(`${API_BASE}/bookings`, { headers: authHeaders() });
         const data = await res.json();
         const filtered = data.filter(b =>
           (!s  || (b.client_name||'').toLowerCase().includes(s) || (b.client_email||'').toLowerCase().includes(s)) &&
@@ -330,7 +484,7 @@
     async function deleteBooking(id) {
       if (!confirm('Are you sure you want to cancel this booking?')) return;
       try {
-        const res = await fetch(`${API_BASE}/bookings/${id}`, { method:'DELETE' });
+        const res = await fetch(`${API_BASE}/bookings/${id}`, { method:'DELETE', headers: authHeaders() });
         if (res.ok) { toast('Booking cancelled.'); renderBookingsTable(); }
       } catch { alert('Failed to delete booking.'); }
     }
@@ -340,7 +494,7 @@
       const tbody = document.getElementById('clientTableBody');
       const s = (document.getElementById('admSearchCl') || {}).value?.toLowerCase() || '';
       try {
-        const res   = await fetch(`${API_BASE}/auth/users`);
+        const res   = await fetch(`${API_BASE}/auth/users`, { headers: authHeaders() });
         const users = await res.json();
         const filtered = users.filter(u =>
           !s || u.full_name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s)
@@ -360,7 +514,7 @@
     async function deleteUser(id) {
       if (!confirm('Delete this user?')) return;
       try {
-        const res = await fetch(`${API_BASE}/auth/users/${id}`, { method:'DELETE' });
+        const res = await fetch(`${API_BASE}/auth/users/${id}`, { method:'DELETE', headers: authHeaders() });
         if (res.ok) { toast('User deleted.'); renderClientsTable(); }
       } catch { alert('Failed to delete user.'); }
     }
@@ -370,7 +524,7 @@
       const tbl = document.getElementById('adminVenueTable');
       tbl.innerHTML = `<thead><tr><th>Venue</th><th>Region</th><th>Location</th><th>Max Guests</th><th>Price (PKR)</th><th>Badge</th><th>Actions</th></tr></thead><tbody><tr><td colspan="7" style="text-align:center;padding:20px;color:#888">Loading venues from database…</td></tr></tbody>`;
       try {
-        const res  = await fetch(`${API_BASE}/venues/all`);
+        const res  = await fetch(`${API_BASE}/venues/all`, { headers: authHeaders() });
         const rows = await res.json();
         if (!rows.length) {
           tbl.querySelector('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No venues found. Add your first venue!</td></tr>';
@@ -396,7 +550,7 @@
     async function deleteVenue(id, name) {
       if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
       try {
-        const res = await fetch(`${API_BASE}/venues/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${API_BASE}/venues/${id}`, { method: 'DELETE', headers: authHeaders() });
         const data = await res.json();
         if (res.ok) { toast('Venue deleted'); renderAdminVenues(); }
         else alert(data.error || 'Failed to delete venue');
@@ -432,7 +586,7 @@
       try {
         const res  = await fetch(`${API_BASE}/venues`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ name, region, location, capacity, price, badge, description, image_url })
         });
         const data = await res.json();
@@ -490,7 +644,7 @@
       try {
         await fetch(`${API_BASE}/hall/admin/bulk-update`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ dates: adminBookedDates })
         });
       } catch(e) { console.warn('Backend sync skipped (offline mode)'); }
@@ -626,13 +780,321 @@ Provide a helpful, concise answer. If they ask about available dates, list speci
     }
 
     // Initialize calendar when panel is opened — fetch from backend first
+    // ═══════════════════════════════════════════════
+    // AUTH HEADER HELPER (sends JWT with admin requests)
+    // ═══════════════════════════════════════════════
+    function authHeaders(extra = {}) {
+      const token = localStorage.getItem('lgv_jwt') || localStorage.getItem('token') || '';
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...extra };
+    }
+
+    // ═══════════════════════════════════════════════
+    // HALL OWNERS — Full Management JS
+    // ═══════════════════════════════════════════════
+    let hoAllOwners = [];   // cached owners list
+    let hoAllVenues = [];   // cached venues list
+    let hoCurrentOwnerId = null;
+
+    // ── Load everything when tab opens ──
+    async function initHallOwners() {
+      await Promise.all([fetchHallOwners(), fetchHoRevenue(), fetchHoNotifications()]);
+    }
+
+    async function fetchHallOwners() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/hall-owners`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await res.text());
+        hoAllOwners = await res.json();
+        renderHallOwnerStats();
+        renderHallOwnersTable();
+      } catch(e) {
+        document.querySelector('#hoTable tbody').innerHTML =
+          `<tr><td colspan="8" style="text-align:center;color:#f87171;padding:20px">⚠ Backend error: ${e.message}</td></tr>`;
+      }
+    }
+
+    function renderHallOwnerStats() {
+      document.getElementById('hoStatOwners').textContent = hoAllOwners.length;
+      document.getElementById('hoStatActive').textContent = hoAllOwners.filter(o => o.is_active).length;
+    }
+
+    function renderHallOwnersTable() {
+      const q = (document.getElementById('hoSearch')?.value || '').toLowerCase();
+      const filtered = hoAllOwners.filter(o =>
+        (o.full_name||'').toLowerCase().includes(q) ||
+        (o.business_name||'').toLowerCase().includes(q) ||
+        (o.email||'').toLowerCase().includes(q)
+      );
+      const tbody = document.querySelector('#hoTable tbody');
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--stone);padding:20px">No hall owners found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = filtered.map(o => {
+        const daysLeft = o.days_remaining;
+        const subBadge = o.sub_status === 'active'
+          ? `<span style="background:#10b981;color:white;padding:2px 8px;border-radius:12px;font-size:11px">${o.plan_name||'Basic'}</span>`
+          : `<span style="background:#6b7280;color:white;padding:2px 8px;border-radius:12px;font-size:11px">No Sub</span>`;
+        const expiry = o.sub_end ? `<span style="color:${daysLeft < 7 ? '#f87171' : '#a3e635'};font-size:12px">${o.sub_end.split('T')[0]} (${daysLeft}d)</span>` : '—';
+        const statusBadge = o.is_active
+          ? `<span style="background:#10b981;color:white;padding:2px 8px;border-radius:12px;font-size:11px">Active</span>`
+          : `<span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px">Disabled</span>`;
+        return `<tr>
+          <td><strong>${o.full_name||'—'}</strong><br><span style="color:var(--stone);font-size:11px">@${o.username||''}</span></td>
+          <td>${o.business_name||'—'}</td>
+          <td style="font-size:12px">${o.email||'—'}</td>
+          <td style="text-align:center">${o.venue_count||0}</td>
+          <td>${subBadge}</td>
+          <td>${expiry}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button onclick="openVenueModal(${o.id},'${(o.full_name||'').replace(/'/g,"\\'")}','${(o.business_name||'').replace(/'/g,"\\'")}' )" style="background:#3b82f6;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">Venues</button>
+              <button onclick="openSubModal(${o.id},'${(o.full_name||'').replace(/'/g,"\\'")}','${(o.business_name||'').replace(/'/g,"\\'")}' )" style="background:#8b5cf6;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">+ Sub</button>
+              <button onclick="toggleOwnerActive(${o.id},${o.is_active?0:1})" style="background:${o.is_active?'#f59e0b':'#10b981'};color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">${o.is_active?'Disable':'Enable'}</button>
+              <button onclick="deleteHallOwner(${o.id},'${(o.full_name||'').replace(/'/g,"\\'")}' )" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">Delete</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function fetchHoRevenue() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/subscriptions/revenue`, { headers: authHeaders() });
+        if (!res.ok) throw new Error();
+        const d = await res.json();
+        document.getElementById('hoStatRevenue').textContent = 'PKR ' + Number(d.total_revenue||0).toLocaleString();
+        const byPlan = (d.by_plan||[]).map(p =>
+          `<span style="background:rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;font-size:13px">${p.plan_name}: <strong>PKR ${Number(p.revenue).toLocaleString()}</strong> (${p.count} subs)</span>`
+        ).join('');
+        document.getElementById('hoRevenueSummary').innerHTML =
+          `<div style="display:flex;gap:10px;flex-wrap:wrap">
+             <span style="background:rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;font-size:13px">Total: <strong>PKR ${Number(d.total_revenue||0).toLocaleString()}</strong></span>
+             <span style="background:rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;font-size:13px">Active Subs: <strong>${d.active_count||0}</strong></span>
+             ${byPlan}
+           </div>`;
+      } catch(e) {
+        document.getElementById('hoRevenueSummary').textContent = 'Could not load revenue data.';
+      }
+    }
+
+    async function fetchHoNotifications() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/notifications`, { headers: authHeaders() });
+        if (!res.ok) throw new Error();
+        const d = await res.json();
+        document.getElementById('hoStatNotifs').textContent = d.unread_count || 0;
+        const list = document.getElementById('hoNotifList');
+        if (!d.notifications || !d.notifications.length) {
+          list.innerHTML = `<div style="color:var(--stone);font-size:13px">No notifications yet.</div>`;
+          return;
+        }
+        list.innerHTML = d.notifications.slice(0,20).map(n => {
+          const dot = n.is_read ? '' : `<span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0"></span>`;
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(255,255,255,${n.is_read?'0.03':'0.07'});border-radius:8px;border-left:3px solid ${n.is_read?'rgba(255,255,255,0.1)':'#f59e0b'}">
+            ${dot}
+            <div style="flex:1">
+              <div style="font-size:12px;color:#1a1a1a">${n.action_detail||n.action_type}</div>
+              <div style="font-size:11px;color:var(--stone);margin-top:3px">${(n.created_at||'').toString().slice(0,16).replace('T',' ')}</div>
+            </div>
+            <button onclick="deleteNotif(${n.id},this)" style="background:none;border:none;color:var(--stone);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
+          </div>`;
+        }).join('');
+      } catch(e) {
+        document.getElementById('hoStatNotifs').textContent = '?';
+      }
+    }
+
+    async function markAllNotifsRead() {
+      try {
+        await fetch(`${API_BASE}/admin/notifications/mark-all-read`, { method:'PUT', headers: authHeaders() });
+        fetchHoNotifications();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function deleteNotif(id, btn) {
+      try {
+        await fetch(`${API_BASE}/admin/notifications/${id}`, { method:'DELETE', headers: authHeaders() });
+        btn.closest('div[style]').remove();
+      } catch(e) {}
+    }
+
+    // ── Add Owner Modal ──
+    function openAddOwnerModal() {
+      ['hoFullName','hoUsername','hoEmail','hoPhone','hoBusinessName','hoPassword'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      const msg = document.getElementById('hoModalMsg'); if (msg) { msg.style.display='none'; msg.textContent=''; }
+      const modal = document.getElementById('hoModal');
+      modal.style.display = 'flex';
+    }
+    function closeOwnerModal() { document.getElementById('hoModal').style.display = 'none'; }
+
+    async function submitAddOwner() {
+      const full_name     = document.getElementById('hoFullName').value.trim();
+      const username      = document.getElementById('hoUsername').value.trim();
+      const email         = document.getElementById('hoEmail').value.trim();
+      const phone         = document.getElementById('hoPhone').value.trim();
+      const business_name = document.getElementById('hoBusinessName').value.trim();
+      const password      = document.getElementById('hoPassword').value;
+      const msg           = document.getElementById('hoModalMsg');
+
+      if (!full_name || !username || !email || !password) {
+        msg.textContent = '⚠ Full name, username, email, and password are required.';
+        msg.style.display = 'block'; return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/admin/hall-owners`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ full_name, username, email, phone, business_name, password })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          closeOwnerModal();
+          fetchHallOwners();
+          toast('✅ Hall owner created!');
+        } else {
+          msg.textContent = '✗ ' + (d.error || 'Failed'); msg.style.display = 'block';
+        }
+      } catch(e) {
+        msg.textContent = '✗ Backend error: ' + e.message; msg.style.display = 'block';
+      }
+    }
+
+    async function toggleOwnerActive(id, newVal) {
+      const owner = hoAllOwners.find(o => o.id === id);
+      if (!owner) return;
+      try {
+        await fetch(`${API_BASE}/admin/hall-owners/${id}`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ full_name: owner.full_name, phone: owner.phone, business_name: owner.business_name, is_active: newVal })
+        });
+        fetchHallOwners();
+        toast(newVal ? '✅ Owner enabled' : '⚠ Owner disabled');
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function deleteHallOwner(id, name) {
+      if (!confirm(`Delete hall owner "${name}"? This cannot be undone.`)) return;
+      try {
+        await fetch(`${API_BASE}/admin/hall-owners/${id}`, { method:'DELETE', headers: authHeaders() });
+        fetchHallOwners();
+        toast('🗑 Hall owner deleted');
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ── Venue Assignment Modal ──
+    async function openVenueModal(ownerId, fullName, businessName) {
+      hoCurrentOwnerId = ownerId;
+      document.getElementById('hoVenueOwnerName').textContent = `Owner: ${fullName} — ${businessName}`;
+      document.getElementById('hoVenueModal').style.display = 'flex';
+
+      // Load all venues into select
+      try {
+        if (!hoAllVenues.length) {
+          const res = await fetch(`${API_BASE}/venues/all`, { headers: authHeaders() });
+          hoAllVenues = res.ok ? await res.json() : [];
+        }
+        const sel = document.getElementById('hoVenueSelect');
+        sel.innerHTML = '<option value="">-- Select a venue --</option>' +
+          hoAllVenues.map(v => `<option value="${v.id}">${v.name} — ${v.location||''}</option>`).join('');
+      } catch(e) {}
+
+      // Load currently assigned venues
+      loadAssignedVenues(ownerId);
+    }
+
+    async function loadAssignedVenues(ownerId) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/hall-owners/${ownerId}/venues`, { headers: authHeaders() });
+        const venues = res.ok ? await res.json() : [];
+        const div = document.getElementById('hoVenueList');
+        if (!venues.length) { div.innerHTML = '<em style="color:var(--stone)">No venues assigned yet.</em>'; return; }
+        div.innerHTML = '<strong style="color:rgba(255,255,255,0.7);font-size:12px">Currently Assigned:</strong><br>' +
+          venues.map(v => `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:8px;margin:4px 3px;font-size:12px">
+            ${v.name}
+            <button onclick="unassignVenue(${ownerId},${v.id},this)" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:12px;padding:0">✕</button>
+          </span>`).join('');
+      } catch(e) {}
+    }
+
+    function closeVenueModal() { document.getElementById('hoVenueModal').style.display = 'none'; }
+
+    async function submitAssignVenue() {
+      const venue_id = document.getElementById('hoVenueSelect').value;
+      if (!venue_id) { alert('Please select a venue.'); return; }
+      try {
+        const res = await fetch(`${API_BASE}/admin/hall-owners/${hoCurrentOwnerId}/venues`, {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ venue_id: parseInt(venue_id) })
+        });
+        const d = await res.json();
+        toast(res.ok ? '✅ Venue assigned!' : '✗ ' + (d.error||'Error'));
+        if (res.ok) { loadAssignedVenues(hoCurrentOwnerId); fetchHallOwners(); }
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function unassignVenue(ownerId, venueId, btn) {
+      try {
+        await fetch(`${API_BASE}/admin/hall-owners/${ownerId}/venues/${venueId}`, { method:'DELETE', headers: authHeaders() });
+        btn.closest('span').remove();
+        fetchHallOwners();
+        toast('Venue unassigned');
+      } catch(e) {}
+    }
+
+    // ── Subscription Modal ──
+    function openSubModal(ownerId, fullName, businessName) {
+      hoCurrentOwnerId = ownerId;
+      document.getElementById('hoSubOwnerName').textContent = `Owner: ${fullName} — ${businessName}`;
+      ['hoSubAmount','hoSubStart','hoSubEnd','hoSubMethod','hoSubRef'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+      });
+      // Default dates: today → today+1 year
+      const today = new Date().toISOString().split('T')[0];
+      const nextYear = new Date(Date.now() + 365*86400000).toISOString().split('T')[0];
+      document.getElementById('hoSubStart').value = today;
+      document.getElementById('hoSubEnd').value   = nextYear;
+      document.getElementById('hoSubModal').style.display = 'flex';
+    }
+    function closeSubModal() { document.getElementById('hoSubModal').style.display = 'none'; }
+
+    async function submitAddSubscription() {
+      const plan_name      = document.getElementById('hoSubPlan').value;
+      const amount_paid    = parseFloat(document.getElementById('hoSubAmount').value) || 0;
+      const start_date     = document.getElementById('hoSubStart').value;
+      const end_date       = document.getElementById('hoSubEnd').value;
+      const payment_method = document.getElementById('hoSubMethod').value;
+      const payment_ref    = document.getElementById('hoSubRef').value;
+      if (!start_date || !end_date) { alert('Start and end dates are required.'); return; }
+      try {
+        const res = await fetch(`${API_BASE}/admin/hall-owners/${hoCurrentOwnerId}/subscriptions`, {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ plan_name, amount_paid, start_date, end_date, payment_method, payment_ref })
+        });
+        const d = await res.json();
+        if (res.ok) { closeSubModal(); fetchHallOwners(); fetchHoRevenue(); toast('✅ Subscription added!'); }
+        else alert('Error: ' + (d.error || 'Unknown error'));
+      } catch(e) { alert('Backend error: ' + e.message); }
+    }
+
+    // ═══════════════════════════════════════════════
+    // END HALL OWNERS JS
+    // ═══════════════════════════════════════════════
+
     const origSwitch = window.switchAdmin;
     window.switchAdmin = async function(panelId) {
       if (typeof origSwitch === 'function') origSwitch(panelId);
+      if (panelId === 'aHallOwners') {
+        initHallOwners();
+      }
       if (panelId === 'aCalendar') {
         // Try fetching latest from backend
         try {
-          const res = await fetch(`${API_BASE}/hall/booked-dates`);
+          const res = await fetch(`${API_BASE}/hall/booked-dates`, { headers: authHeaders() });
           const data = await res.json();
           if (data.bookedDates && Array.isArray(data.bookedDates)) {
             adminBookedDates = data.bookedDates;

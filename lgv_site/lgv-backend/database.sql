@@ -180,3 +180,130 @@ CREATE TABLE contacts (
     created_at DATETIME DEFAULT GETDATE()
 );
 GO
+
+-- ══════════════════════════════════════════════════════════════
+-- HALL OWNER FEATURE TABLES
+-- Run this after the base schema is already in place
+-- ══════════════════════════════════════════════════════════════
+
+-- ── HALL OWNERS ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='hall_owners' AND xtype='U')
+CREATE TABLE hall_owners (
+    id            INT IDENTITY(1,1) PRIMARY KEY,
+    full_name     NVARCHAR(150) NOT NULL,
+    username      NVARCHAR(80)  NOT NULL UNIQUE,
+    email         NVARCHAR(180) NOT NULL UNIQUE,
+    password_hash NVARCHAR(255) NOT NULL,
+    phone         NVARCHAR(40),
+    business_name NVARCHAR(200),
+    is_active     TINYINT DEFAULT 1,
+    last_login    DATETIME,
+    created_at    DATETIME DEFAULT GETDATE(),
+    created_by    INT FOREIGN KEY REFERENCES users(id) ON DELETE SET NULL
+);
+GO
+
+-- ── HALL OWNER ↔ VENUES (many-to-many) ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='hall_owner_venues' AND xtype='U')
+CREATE TABLE hall_owner_venues (
+    id             INT IDENTITY(1,1) PRIMARY KEY,
+    hall_owner_id  INT NOT NULL FOREIGN KEY REFERENCES hall_owners(id) ON DELETE CASCADE,
+    venue_id       INT NOT NULL FOREIGN KEY REFERENCES venues(id) ON DELETE CASCADE,
+    assigned_at    DATETIME DEFAULT GETDATE(),
+    assigned_by    INT FOREIGN KEY REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT UQ_ho_venue UNIQUE (hall_owner_id, venue_id)
+);
+GO
+
+-- ── HALL OWNER SUBSCRIPTIONS ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='hall_owner_subscriptions' AND xtype='U')
+CREATE TABLE hall_owner_subscriptions (
+    id             INT IDENTITY(1,1) PRIMARY KEY,
+    hall_owner_id  INT NOT NULL FOREIGN KEY REFERENCES hall_owners(id) ON DELETE CASCADE,
+    plan_name      NVARCHAR(50)  DEFAULT 'Basic',
+    amount_paid    DECIMAL(12,2) DEFAULT 0,
+    currency       NVARCHAR(10)  DEFAULT 'PKR',
+    payment_method NVARCHAR(100),
+    payment_ref    NVARCHAR(200),
+    start_date     DATE NOT NULL,
+    end_date       DATE NOT NULL,
+    status         NVARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','expired','cancelled')),
+    notes          NVARCHAR(MAX),
+    created_at     DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ── VENUE EXTENDED DETAILS ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='venue_details' AND xtype='U')
+CREATE TABLE venue_details (
+    id                   INT IDENTITY(1,1) PRIMARY KEY,
+    venue_id             INT NOT NULL UNIQUE FOREIGN KEY REFERENCES venues(id) ON DELETE CASCADE,
+    capacity_seated      INT,
+    capacity_standing    INT,
+    price_per_head       DECIMAL(12,2),
+    price_flat           DECIMAL(12,2),
+    min_booking_amount   DECIMAL(12,2),
+    has_ac               TINYINT DEFAULT 0,
+    has_parking          TINYINT DEFAULT 0,
+    has_catering         TINYINT DEFAULT 0,
+    has_decoration       TINYINT DEFAULT 0,
+    has_photography      TINYINT DEFAULT 0,
+    has_sound_system     TINYINT DEFAULT 0,
+    has_generator        TINYINT DEFAULT 0,
+    has_bridal_room      TINYINT DEFAULT 0,
+    has_stage            TINYINT DEFAULT 0,
+    has_valet            TINYINT DEFAULT 0,
+    catering_info        NVARCHAR(MAX),
+    parking_capacity     INT,
+    hall_size_sqft       INT,
+    no_of_halls          INT DEFAULT 1,
+    address_full         NVARCHAR(500),
+    google_maps_link     NVARCHAR(500),
+    contact_phone        NVARCHAR(40),
+    contact_whatsapp     NVARCHAR(40),
+    website_url          NVARCHAR(300),
+    advance_booking_days INT DEFAULT 7,
+    cancellation_policy  NVARCHAR(MAX),
+    special_notes        NVARCHAR(MAX),
+    last_updated         DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ── VENUE IMAGES ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='venue_images' AND xtype='U')
+CREATE TABLE venue_images (
+    id          INT IDENTITY(1,1) PRIMARY KEY,
+    venue_id    INT NOT NULL FOREIGN KEY REFERENCES venues(id) ON DELETE CASCADE,
+    image_url   NVARCHAR(500) NOT NULL,
+    caption     NVARCHAR(200),
+    is_primary  TINYINT DEFAULT 0,
+    sort_order  INT DEFAULT 0,
+    added_at    DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ── VENUE HEATMAP / AVAILABILITY ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='venue_heatmap' AND xtype='U')
+CREATE TABLE venue_heatmap (
+    id            INT IDENTITY(1,1) PRIMARY KEY,
+    venue_id      INT NOT NULL FOREIGN KEY REFERENCES venues(id) ON DELETE CASCADE,
+    blocked_date  DATE NOT NULL,
+    reason        NVARCHAR(200) DEFAULT 'Booked',
+    blocked_by    INT FOREIGN KEY REFERENCES hall_owners(id) ON DELETE SET NULL,
+    created_at    DATETIME DEFAULT GETDATE(),
+    CONSTRAINT UQ_heatmap UNIQUE (venue_id, blocked_date)
+);
+GO
+
+-- ── ADMIN NOTIFICATIONS (from hall owner activity) ──
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='admin_notifications' AND xtype='U')
+CREATE TABLE admin_notifications (
+    id             INT IDENTITY(1,1) PRIMARY KEY,
+    hall_owner_id  INT FOREIGN KEY REFERENCES hall_owners(id) ON DELETE SET NULL,
+    venue_id       INT FOREIGN KEY REFERENCES venues(id) ON DELETE SET NULL,
+    action_type    NVARCHAR(80),
+    action_detail  NVARCHAR(MAX),
+    is_read        TINYINT DEFAULT 0,
+    created_at     DATETIME DEFAULT GETDATE()
+);
+GO

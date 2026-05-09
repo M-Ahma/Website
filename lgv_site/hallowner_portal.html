@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VenueVerse — Hall Owner Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #f5f0e8; --warm: #faf8f4; --olive: #6b7c5c; --olive-dk: #3d4f30;
+      --sage: #8fa07a; --stone: #9a8f84; --ch: #2d2d2b; --gold: #c8a96e;
+      --gold-lt: #e8d5a8; --dg: #1e2d1a; --mg: #2e4028; --r: 12px;
+      --sidebar-w: 260px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Jost',sans-serif; background:var(--warm); color:var(--ch); overflow-x:hidden; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:var(--sage); border-radius:3px; }
+
+    /* ── LOGIN OVERLAY ── */
+    .login-overlay {
+      position:fixed; inset:0; background:linear-gradient(135deg,var(--dg) 0%,var(--mg) 60%,#1a2e10 100%);
+      display:flex; align-items:center; justify-content:center; z-index:1000;
+    }
+    .login-overlay.hidden { display:none; }
+    .login-card {
+      background:rgba(250,248,244,0.04); border:1px solid rgba(200,169,110,0.25);
+      border-radius:20px; padding:52px 48px; width:420px; max-width:92vw;
+      backdrop-filter:blur(20px); box-shadow:0 32px 80px rgba(0,0,0,0.4);
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    .login-logo { font-family:'Cormorant Garamond',serif; font-size:28px; color:#fff; text-align:center; margin-bottom:6px; }
+    .login-logo span { display:block; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-top:2px; }
+    .login-title { text-align:center; font-size:15px; color:rgba(255,255,255,0.6); margin-bottom:32px; }
+    .lfield { margin-bottom:18px; }
+    .lfield label { display:block; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold-lt); margin-bottom:7px; }
+    .lfield input {
+      width:100%; padding:13px 16px; background:rgba(255,255,255,0.07);
+      border:1px solid rgba(200,169,110,0.2); border-radius:8px;
+      color:#fff; font-family:'Jost',sans-serif; font-size:14px; outline:none;
+      transition:border-color .25s;
+    }
+    .lfield input:focus { border-color:var(--gold); }
+    .lfield input::placeholder { color:rgba(255,255,255,0.3); }
+    .lbtn {
+      width:100%; padding:14px; background:linear-gradient(135deg,var(--olive-dk),var(--mg));
+      border:1px solid var(--gold); border-radius:8px; color:var(--gold);
+      font-family:'Jost',sans-serif; font-size:13px; letter-spacing:1.5px;
+      text-transform:uppercase; cursor:pointer; transition:all .3s; margin-top:8px;
+    }
+    .lbtn:hover { background:var(--gold); color:var(--dg); }
+    .lerr { color:#f08080; font-size:13px; text-align:center; margin-bottom:14px; min-height:18px; }
+    .lback { text-align:center; margin-top:18px; }
+    .lback a { color:rgba(255,255,255,0.4); font-size:12px; text-decoration:none; transition:color .2s; }
+    .lback a:hover { color:var(--gold); }
+
+    /* ── LAYOUT ── */
+    .ho-wrap { display:flex; min-height:100vh; }
+    .ho-sidebar {
+      width:var(--sidebar-w); background:linear-gradient(180deg,var(--dg) 0%,var(--mg) 100%);
+      position:fixed; left:0; top:0; bottom:0; overflow-y:auto; z-index:100;
+      border-right:1px solid rgba(200,169,110,0.12);
+    }
+    .ho-sidebar-inner { padding:0 0 32px; }
+    .ho-brand {
+      padding:32px 24px 24px;
+      border-bottom:1px solid rgba(200,169,110,0.12);
+    }
+    .ho-brand-logo { font-family:'Cormorant Garamond',serif; font-size:22px; color:#fff; }
+    .ho-brand-logo span { display:block; font-family:'Jost',sans-serif; font-size:9px; letter-spacing:2.5px; color:var(--gold); text-transform:uppercase; margin-top:2px; }
+    .ho-owner-info { margin-top:14px; }
+    .ho-owner-name { font-size:13px; font-weight:500; color:rgba(255,255,255,0.9); }
+    .ho-owner-biz { font-size:11px; color:var(--sage); margin-top:3px; }
+    .ho-sub-badge {
+      display:inline-block; margin-top:10px; padding:4px 10px;
+      background:rgba(200,169,110,0.15); border:1px solid rgba(200,169,110,0.3);
+      border-radius:20px; font-size:10px; letter-spacing:1px; text-transform:uppercase;
+      color:var(--gold);
+    }
+    .ho-nav { list-style:none; padding:20px 0; }
+    .ho-nav li a {
+      display:flex; align-items:center; gap:11px;
+      padding:12px 24px; color:rgba(255,255,255,0.55); font-size:13px;
+      text-decoration:none; cursor:pointer; transition:all .2s;
+      border-left:2px solid transparent;
+    }
+    .ho-nav li a:hover { color:rgba(255,255,255,0.9); background:rgba(255,255,255,0.04); }
+    .ho-nav li a.active {
+      color:#fff; background:rgba(200,169,110,0.1);
+      border-left-color:var(--gold);
+    }
+    .ho-nav li a .ni { font-size:16px; width:20px; text-align:center; }
+    .ho-nav-divider { height:1px; background:rgba(255,255,255,0.06); margin:12px 24px; }
+    .ho-logout { padding:0 16px 24px; margin-top:auto; }
+    .ho-logout-btn {
+      width:100%; padding:10px; background:rgba(240,128,128,0.08);
+      border:1px solid rgba(240,128,128,0.2); border-radius:8px;
+      color:#f08080; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+      cursor:pointer; transition:all .2s; font-family:'Jost',sans-serif;
+    }
+    .ho-logout-btn:hover { background:rgba(240,128,128,0.15); }
+
+    /* ── MAIN ── */
+    .ho-main { margin-left:var(--sidebar-w); flex:1; min-height:100vh; }
+    .ho-topbar {
+      position:sticky; top:0; z-index:50;
+      background:rgba(250,248,244,0.95); backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(107,124,92,0.15);
+      padding:0 36px; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ho-topbar h1 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; }
+    .ho-topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-date { font-size:12px; color:var(--stone); }
+
+    /* ── PANELS ── */
+    .ho-panel { display:none; padding:36px; animation:pgIn .35s ease both; }
+    .ho-panel.active { display:block; }
+    @keyframes pgIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+    /* ── CARDS ── */
+    .ho-card {
+      background:#fff; border-radius:var(--r); padding:28px 30px;
+      box-shadow:0 2px 16px rgba(0,0,0,0.06); margin-bottom:24px;
+    }
+    .ho-card h3 { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; margin-bottom:18px; color:var(--olive-dk); }
+
+    /* ── STAT CARDS ── */
+    .stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:18px; margin-bottom:28px; }
+    .stat-card {
+      background:#fff; border-radius:var(--r); padding:22px 24px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.05); border-top:3px solid var(--sage);
+    }
+    .stat-val { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:600; color:var(--olive-dk); }
+    .stat-lbl { font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--stone); margin-top:4px; }
+    .stat-sub { font-size:12px; color:var(--sage); margin-top:6px; }
+
+    /* ── VENUE SELECTOR ── */
+    .venue-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+    .venue-tab {
+      padding:9px 20px; border-radius:20px; border:1px solid var(--sage);
+      background:transparent; color:var(--olive); font-family:'Jost',sans-serif;
+      font-size:13px; cursor:pointer; transition:all .2s;
+    }
+    .venue-tab:hover { background:var(--sage); color:#fff; }
+    .venue-tab.active { background:var(--olive-dk); border-color:var(--olive-dk); color:#fff; }
+
+    /* ── FORMS ── */
+    .fgrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .fgrid.f3 { grid-template-columns:1fr 1fr 1fr; }
+    .fgrid.f1 { grid-template-columns:1fr; }
+    .fgrp { display:flex; flex-direction:column; gap:6px; }
+    .fgrp.full { grid-column:1/-1; }
+    .flbl { font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--stone); }
+    .finp, .fsel, .ftxt {
+      padding:11px 14px; border:1px solid rgba(107,124,92,0.25); border-radius:8px;
+      font-family:'Jost',sans-serif; font-size:14px; color:var(--ch);
+      background:#fafaf8; outline:none; transition:border-color .2s;
+    }
+    .finp:focus, .fsel:focus, .ftxt:focus { border-color:var(--sage); }
+    .ftxt { resize:vertical; min-height:90px; }
+    .toggle-group { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+    .toggle-item {
+      display:flex; align-items:center; gap:8px; padding:8px 14px;
+      border:1px solid rgba(107,124,92,0.25); border-radius:8px; cursor:pointer;
+      transition:all .2s; font-size:13px; user-select:none;
+    }
+    .toggle-item.on { background:rgba(61,79,48,0.08); border-color:var(--sage); color:var(--olive-dk); }
+    .toggle-item input { display:none; }
+    .toggle-dot {
+      width:16px; height:16px; border-radius:50%;
+      background:#ddd; transition:background .2s; flex-shrink:0;
+    }
+    .toggle-item.on .toggle-dot { background:var(--olive); }
+
+    /* ── BUTTONS ── */
+    .btn { padding:11px 22px; border-radius:8px; border:none; cursor:pointer; font-family:'Jost',sans-serif; font-size:13px; letter-spacing:.6px; transition:all .2s; }
+    .btn-primary { background:var(--olive-dk); color:#fff; }
+    .btn-primary:hover { background:var(--dg); }
+    .btn-outline { background:transparent; border:1px solid var(--sage); color:var(--olive); }
+    .btn-outline:hover { background:var(--sage); color:#fff; }
+    .btn-danger { background:transparent; border:1px solid #f08080; color:#c04040; }
+    .btn-danger:hover { background:#f08080; color:#fff; }
+    .btn-gold { background:var(--gold); color:var(--dg); }
+    .btn-gold:hover { background:#b8995e; }
+    .btn-sm { padding:7px 14px; font-size:12px; }
+    .save-bar {
+      display:flex; align-items:center; justify-content:flex-end; gap:12px;
+      padding-top:20px; border-top:1px solid var(--cream); margin-top:20px;
+    }
+    .save-msg { font-size:13px; color:var(--sage); opacity:0; transition:opacity .4s; }
+    .save-msg.show { opacity:1; }
+
+    /* ── IMAGE GALLERY ── */
+    .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
+    .img-item {
+      position:relative; border-radius:10px; overflow:hidden;
+      aspect-ratio:4/3; background:#eee; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    }
+    .img-item img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+    .img-item:hover img { transform:scale(1.05); }
+    .img-item-overlay {
+      position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .2s;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .img-item:hover .img-item-overlay { background:rgba(0,0,0,0.5); }
+    .img-overlay-btn {
+      opacity:0; transform:scale(.8); transition:all .2s;
+      padding:6px 12px; border-radius:6px; border:none; cursor:pointer;
+      font-size:11px; font-family:'Jost',sans-serif; letter-spacing:.5px;
+    }
+    .img-item:hover .img-overlay-btn { opacity:1; transform:scale(1); }
+    .img-overlay-btn.set-primary { background:var(--gold); color:var(--dg); }
+    .img-overlay-btn.del-img { background:rgba(240,100,100,0.9); color:#fff; }
+    .img-primary-badge {
+      position:absolute; top:8px; left:8px;
+      background:var(--gold); color:var(--dg); font-size:9px;
+      letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:10px;
+    }
+    .img-add-box {
+      border:2px dashed rgba(107,124,92,0.3); border-radius:10px;
+      padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s;
+    }
+    .img-add-box:hover { border-color:var(--sage); background:rgba(143,160,122,0.05); }
+    .img-add-icon { font-size:28px; color:var(--sage); margin-bottom:8px; }
+    .img-add-txt { font-size:13px; color:var(--stone); }
+    .img-url-row { display:flex; gap:10px; margin-bottom:16px; }
+    .img-url-row input { flex:1; }
+
+    /* ── HEATMAP CALENDAR ── */
+    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .cal-month-label { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--olive-dk); }
+    .cal-nav { display:flex; gap:8px; }
+    .cal-nav-btn {
+      width:34px; height:34px; border-radius:50%; border:1px solid var(--sage);
+      background:transparent; cursor:pointer; color:var(--olive); font-size:16px; transition:all .2s;
+    }
+    .cal-nav-btn:hover { background:var(--sage); color:#fff; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-day-name { text-align:center; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--stone); padding:6px 0; }
+    .cal-day {
+      aspect-ratio:1; border-radius:8px; border:1px solid rgba(107,124,92,0.15);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; cursor:pointer; transition:all .2s; user-select:none;
+    }
+    .cal-day:hover:not(.cal-empty):not(.cal-booking) { background:rgba(200,169,110,0.15); border-color:var(--gold); }
+    .cal-day.cal-today { border-color:var(--sage); font-weight:600; color:var(--olive); }
+    .cal-day.cal-blocked { background:rgba(200,80,80,0.12); border-color:rgba(200,80,80,0.4); color:#c04040; }
+    .cal-day.cal-booking { background:rgba(200,80,80,0.25); border-color:#d04040; color:#c04040; cursor:not-allowed; }
+    .cal-day.cal-empty { border:none; cursor:default; }
+    .cal-day.cal-past { opacity:.35; cursor:not-allowed; }
+    .cal-legend { display:flex; gap:18px; margin-top:16px; font-size:12px; color:var(--stone); }
+    .cal-legend-dot { width:12px; height:12px; border-radius:3px; display:inline-block; margin-right:5px; vertical-align:middle; }
+    .reason-sel { padding:8px 12px; border:1px solid rgba(107,124,92,0.25); border-radius:8px; font-size:13px; color:var(--ch); margin-bottom:14px; }
+
+    /* ── BOOKINGS TABLE ── */
+    .admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .admin-table thead th { padding:10px 14px; text-align:left; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--stone); border-bottom:1px solid var(--cream); font-weight:500; }
+    .admin-table tbody td { padding:13px 14px; border-bottom:1px solid rgba(0,0,0,0.04); }
+    .admin-table tbody tr:hover td { background:rgba(143,160,122,0.04); }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; letter-spacing:.5px; }
+    .badge-confirmed { background:rgba(61,79,48,0.1); color:var(--olive-dk); }
+    .badge-pending   { background:rgba(200,169,110,0.15); color:#8a6b20; }
+    .badge-cancelled { background:rgba(200,80,80,0.1); color:#c04040; }
+
+    /* ── SUBSCRIPTION BOX ── */
+    .sub-box {
+      border-radius:var(--r); padding:22px 26px;
+      background:linear-gradient(135deg,var(--dg),var(--mg));
+      color:#fff; margin-bottom:24px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    }
+    .sub-box-info h4 { font-family:'Cormorant Garamond',serif; font-size:18px; margin-bottom:4px; }
+    .sub-box-info p { font-size:12px; color:rgba(255,255,255,0.6); }
+    .sub-days { text-align:right; }
+    .sub-days-num { font-family:'Cormorant Garamond',serif; font-size:36px; color:var(--gold); line-height:1; }
+    .sub-days-lbl { font-size:11px; color:rgba(255,255,255,0.5); letter-spacing:1px; text-transform:uppercase; }
+    .sub-expired { background:linear-gradient(135deg,#3d1a1a,#5a2a2a); }
+
+    /* ── TOAST ── */
+    #toast {
+      position:fixed; bottom:28px; right:28px; z-index:9999;
+      background:var(--olive-dk); color:#fff; padding:13px 20px;
+      border-radius:10px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+      opacity:0; transform:translateY(16px); transition:all .3s; pointer-events:none;
+    }
+    #toast.show { opacity:1; transform:none; }
+    #toast.error { background:#c04040; }
+
+    @media(max-width:768px) {
+      .ho-sidebar { transform:translateX(-100%); transition:.3s; }
+      .ho-main { margin-left:0; }
+      .fgrid, .fgrid.f3 { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- LOGIN OVERLAY -->
+<!-- ══════════════════════════════════════════ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">VenueVerse <span>Hall Owner Portal</span></div>
+    <p class="login-title">Sign in with your credentials provided by the admin</p>
+    <div class="lerr" id="loginErr"></div>
+    <div class="lfield">
+      <label>Username or Email</label>
+      <input type="text" id="loginUser" placeholder="your_username" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="lfield">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="lbtn" onclick="doLogin()">Sign In to Portal</button>
+    <div class="lback"><a href="index.html">← Back to VenueVerse</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MAIN PORTAL -->
+<!-- ══════════════════════════════════════════ -->
+<div class="ho-wrap" id="portalWrap" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="ho-sidebar">
+    <div class="ho-sidebar-inner">
+      <div class="ho-brand">
+        <div class="ho-brand-logo">VenueVerse <span>Hall Owner</span></div>
+        <div class="ho-owner-info">
+          <div class="ho-owner-name" id="sideOwnerName">—</div>
+          <div class="ho-owner-biz" id="sideOwnerBiz">—</div>
+          <div class="ho-sub-badge" id="sideSubBadge">Loading…</div>
+        </div>
+      </div>
+      <ul class="ho-nav">
+        <li><a class="active" onclick="switchPanel('pDash')"    id="n-pDash">    <span class="ni">📊</span> Dashboard</a></li>
+        <li><a onclick="switchPanel('pDetails')"  id="n-pDetails">  <span class="ni">📝</span> Venue Details</a></li>
+        <li><a onclick="switchPanel('pImages')"   id="n-pImages">   <span class="ni">🖼️</span> Photos & Gallery</a></li>
+        <li><a onclick="switchPanel('pHeatmap')"  id="n-pHeatmap">  <span class="ni">📅</span> Availability Calendar</a></li>
+        <li><a onclick="switchPanel('pBookings')" id="n-pBookings"> <span class="ni">📋</span> Bookings</a></li>
+        <div class="ho-nav-divider"></div>
+        <li><a onclick="switchPanel('pSubscription')" id="n-pSubscription"><span class="ni">💳</span> Subscription</a></li>
+      </ul>
+      <div class="ho-logout" style="margin-top:32px">
+        <button class="ho-logout-btn" onclick="doLogout()">🔒 Sign Out</button>
+        <div style="text-align:center;margin-top:12px">
+          <a href="index.html" style="font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none">← Back to Website</a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="ho-main">
+    <div class="ho-topbar">
+      <h1 id="panelTitle">Dashboard</h1>
+      <div class="ho-topbar-right">
+        <span class="topbar-date" id="topbarDate"></span>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="ho-panel active" id="pDash">
+      <div id="subBoxContainer"></div>
+      <div class="stat-row" id="dashStats">
+        <div class="stat-card"><div class="stat-val" id="st-venues">—</div><div class="stat-lbl">My Venues</div></div>
+        <div class="stat-card"><div class="stat-val" id="st-bookings">—</div><div class="stat-lbl">Total Bookings</div></div>
+        <div class="stat-card"><div class="stat-val" id="st-confirmed">—</div><div class="stat-lbl">Confirmed</div></div>
+        <div class="stat-card"><div class="stat-val" id="st-pending">—</div><div class="stat-lbl">Pending</div></div>
+      </div>
+      <div class="ho-card">
+        <h3>My Venues</h3>
+        <div id="dashVenueList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── VENUE DETAILS ── -->
+    <div class="ho-panel" id="pDetails">
+      <div class="venue-tabs" id="detailVenueTabs"></div>
+      <div class="ho-card">
+        <h3>Basic Information</h3>
+        <div class="fgrid">
+          <div class="fgrp"><label class="flbl">Hall / Venue Name</label><input class="finp" id="d-name" placeholder="e.g. Pearl Continental Banquet" /></div>
+          <div class="fgrp"><label class="flbl">Location / Area</label><input class="finp" id="d-location" placeholder="e.g. Gulberg, Lahore" /></div>
+          <div class="fgrp"><label class="flbl">Max Guests (Total)</label><input class="finp" type="number" id="d-max_guests" /></div>
+          <div class="fgrp"><label class="flbl">Price Per Head (PKR)</label><input class="finp" type="number" id="d-price" /></div>
+          <div class="fgrp full"><label class="flbl">Short Description</label><textarea class="ftxt" id="d-description" placeholder="Describe your venue briefly…"></textarea></div>
+        </div>
+      </div>
+      <div class="ho-card">
+        <h3>Capacity & Pricing</h3>
+        <div class="fgrid f3">
+          <div class="fgrp"><label class="flbl">Seated Capacity</label><input class="finp" type="number" id="d-capacity_seated" /></div>
+          <div class="fgrp"><label class="flbl">Standing Capacity</label><input class="finp" type="number" id="d-capacity_standing" /></div>
+          <div class="fgrp"><label class="flbl">No. of Halls</label><input class="finp" type="number" id="d-no_of_halls" /></div>
+          <div class="fgrp"><label class="flbl">Price Per Head (PKR)</label><input class="finp" type="number" id="d-price_per_head" /></div>
+          <div class="fgrp"><label class="flbl">Flat Booking Price (PKR)</label><input class="finp" type="number" id="d-price_flat" /></div>
+          <div class="fgrp"><label class="flbl">Min Booking Amount</label><input class="finp" type="number" id="d-min_booking_amount" /></div>
+          <div class="fgrp"><label class="flbl">Hall Size (sq.ft)</label><input class="finp" type="number" id="d-hall_size_sqft" /></div>
+          <div class="fgrp"><label class="flbl">Parking Capacity (cars)</label><input class="finp" type="number" id="d-parking_capacity" /></div>
+          <div class="fgrp"><label class="flbl">Advance Booking (days)</label><input class="finp" type="number" id="d-advance_booking_days" /></div>
+        </div>
+      </div>
+      <div class="ho-card">
+        <h3>Facilities & Amenities</h3>
+        <div class="toggle-group" id="facilitiesGroup">
+          <label class="toggle-item" id="fac-ac"><input type="checkbox" id="d-has_ac" onchange="syncToggle('fac-ac')"><div class="toggle-dot"></div>❄️ Air Conditioning</label>
+          <label class="toggle-item" id="fac-park"><input type="checkbox" id="d-has_parking" onchange="syncToggle('fac-park')"><div class="toggle-dot"></div>🅿️ Parking</label>
+          <label class="toggle-item" id="fac-cat"><input type="checkbox" id="d-has_catering" onchange="syncToggle('fac-cat')"><div class="toggle-dot"></div>🍽️ Catering</label>
+          <label class="toggle-item" id="fac-dec"><input type="checkbox" id="d-has_decoration" onchange="syncToggle('fac-dec')"><div class="toggle-dot"></div>🌸 Decoration</label>
+          <label class="toggle-item" id="fac-photo"><input type="checkbox" id="d-has_photography" onchange="syncToggle('fac-photo')"><div class="toggle-dot"></div>📷 Photography</label>
+          <label class="toggle-item" id="fac-sound"><input type="checkbox" id="d-has_sound_system" onchange="syncToggle('fac-sound')"><div class="toggle-dot"></div>🔊 Sound System</label>
+          <label class="toggle-item" id="fac-gen"><input type="checkbox" id="d-has_generator" onchange="syncToggle('fac-gen')"><div class="toggle-dot"></div>⚡ Generator</label>
+          <label class="toggle-item" id="fac-bridal"><input type="checkbox" id="d-has_bridal_room" onchange="syncToggle('fac-bridal')"><div class="toggle-dot"></div>💍 Bridal Room</label>
+          <label class="toggle-item" id="fac-stage"><input type="checkbox" id="d-has_stage" onchange="syncToggle('fac-stage')"><div class="toggle-dot"></div>🎭 Stage</label>
+          <label class="toggle-item" id="fac-valet"><input type="checkbox" id="d-has_valet" onchange="syncToggle('fac-valet')"><div class="toggle-dot"></div>🚗 Valet Parking</label>
+        </div>
+      </div>
+      <div class="ho-card">
+        <h3>Contact & Location</h3>
+        <div class="fgrid">
+          <div class="fgrp"><label class="flbl">Contact Phone</label><input class="finp" id="d-contact_phone" placeholder="+92-42-…" /></div>
+          <div class="fgrp"><label class="flbl">WhatsApp Number</label><input class="finp" id="d-contact_whatsapp" placeholder="+92-300-…" /></div>
+          <div class="fgrp"><label class="flbl">Website URL</label><input class="finp" id="d-website_url" placeholder="https://…" /></div>
+          <div class="fgrp"><label class="flbl">Google Maps Link</label><input class="finp" id="d-google_maps_link" placeholder="https://maps.google.com/…" /></div>
+          <div class="fgrp full"><label class="flbl">Full Address</label><textarea class="ftxt" id="d-address_full" placeholder="Street, Area, City…" style="min-height:60px"></textarea></div>
+        </div>
+      </div>
+      <div class="ho-card">
+        <h3>Additional Information</h3>
+        <div class="fgrid f1">
+          <div class="fgrp"><label class="flbl">Catering Menu / Options</label><textarea class="ftxt" id="d-catering_info" placeholder="Describe cuisine, menu options, per head rates…"></textarea></div>
+          <div class="fgrp"><label class="flbl">Cancellation Policy</label><textarea class="ftxt" id="d-cancellation_policy" placeholder="e.g. 50% refund if cancelled 7 days before…"></textarea></div>
+          <div class="fgrp"><label class="flbl">Special Notes</label><textarea class="ftxt" id="d-special_notes" placeholder="Any special notes for guests or clients…"></textarea></div>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-msg" id="detailsSaveMsg">✓ Changes saved successfully</span>
+        <button class="btn btn-outline" onclick="loadVenueDetails(currentVenueId)">Reset</button>
+        <button class="btn btn-primary" onclick="saveVenueDetails()">Save All Changes</button>
+      </div>
+    </div>
+
+    <!-- ── IMAGES ── -->
+    <div class="ho-panel" id="pImages">
+      <div class="venue-tabs" id="imageVenueTabs"></div>
+      <div class="ho-card">
+        <h3>Add New Photo</h3>
+        <div class="img-url-row">
+          <input class="finp" id="newImgUrl" placeholder="Paste image URL here — https://example.com/photo.jpg" />
+          <input class="finp" id="newImgCaption" placeholder="Caption (optional)" style="max-width:220px" />
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" id="newImgPrimary" /> Set as cover photo
+          </label>
+          <button class="btn btn-primary" onclick="addImage()">Add Photo</button>
+        </div>
+        <p style="font-size:12px;color:var(--stone)">Tip: Use direct image URLs from Google Drive, Cloudinary, Unsplash, or your hosting server.</p>
+      </div>
+      <div class="ho-card">
+        <h3>Gallery <span id="imgCount" style="font-size:14px;font-weight:400;color:var(--stone)"></span></h3>
+        <div class="img-grid" id="imageGrid">
+          <div style="text-align:center;color:var(--stone);font-size:13px;padding:40px;grid-column:1/-1">Loading photos…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HEATMAP ── -->
+    <div class="ho-panel" id="pHeatmap">
+      <div class="venue-tabs" id="heatmapVenueTabs"></div>
+      <div class="ho-card">
+        <h3>Availability Calendar</h3>
+        <p style="font-size:13px;color:var(--stone);margin-bottom:20px">
+          Click on any date to mark it as <strong>Blocked</strong> or <strong>Available</strong>. Red dates are blocked (not available for booking). Blue dates are already booked by clients. Click <em>Save Calendar</em> when done — admin will be notified automatically.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <label style="font-size:13px;color:var(--stone)">Block reason:</label>
+          <select class="reason-sel" id="blockReason">
+            <option value="Booked">Booked</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Private Event">Private Event</option>
+            <option value="Holiday">Holiday</option>
+            <option value="Reserved">Reserved</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="saveHeatmap()">💾 Save Calendar</button>
+          <button class="btn btn-outline btn-sm" onclick="loadHeatmap(currentVenueId)">↺ Reset</button>
+        </div>
+        <div class="cal-header">
+          <div class="cal-month-label" id="calMonthLabel"></div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <span><span class="cal-legend-dot" style="background:rgba(200,80,80,0.2);border:1px solid rgba(200,80,80,0.4)"></span>Blocked by you</span>
+          <span><span class="cal-legend-dot" style="background:rgba(200,80,80,0.35);border:1px solid #d04040"></span>Booked by client</span>
+          <span><span class="cal-legend-dot" style="background:#fff;border:1px solid rgba(107,124,92,0.3)"></span>Available</span>
+        </div>
+        <div style="margin-top:16px;padding:14px 16px;background:var(--cream);border-radius:8px;font-size:13px;color:var(--stone)">
+          <strong style="color:var(--olive-dk)">Blocked dates: </strong><span id="blockedCount">0</span> &nbsp;|&nbsp;
+          <strong style="color:var(--olive-dk)">Client bookings: </strong><span id="bookingCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOKINGS ── -->
+    <div class="ho-panel" id="pBookings">
+      <div class="venue-tabs" id="bookingsVenueTabs"></div>
+      <div class="ho-card">
+        <h3>Bookings for This Venue</h3>
+        <p style="font-size:12px;color:var(--stone);margin-bottom:18px">View-only. Contact admin to modify booking status.</p>
+        <table class="admin-table" id="bookingsTable">
+          <thead><tr><th>Ref</th><th>Client</th><th>Phone</th><th>Wedding Date</th><th>Guests</th><th>Total (PKR)</th><th>Status</th></tr></thead>
+          <tbody id="bookingsBody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--stone)">Select a venue above</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SUBSCRIPTION ── -->
+    <div class="ho-panel" id="pSubscription">
+      <div class="ho-card">
+        <h3>Your Subscription</h3>
+        <div id="subDetailBox"></div>
+        <div style="margin-top:20px;padding:18px;background:var(--cream);border-radius:10px;font-size:13px;color:var(--stone)">
+          <strong style="color:var(--ch)">Need to renew or upgrade?</strong><br/>
+          Contact the VenueVerse admin team to renew your subscription or upgrade your plan.<br/><br/>
+          📞 Admin Contact: <strong style="color:var(--olive-dk)">admin@venueverse.com</strong>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const API = 'http://localhost:5000/api';
+let token = localStorage.getItem('ho_token') || '';
+let ownerData = JSON.parse(localStorage.getItem('ho_owner') || 'null');
+let myVenues = [];
+let currentVenueId = null;
+let calYear, calMonth;
+let blockedDates = []; // { date, reason }
+let bookingDates = [];
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.onload = () => {
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-PK', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  if (token && ownerData) {
+    showPortal();
+  } else {
+    document.getElementById('loginOverlay').classList.remove('hidden');
+  }
+};
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent = '';
+  if (!username || !password) { document.getElementById('loginErr').textContent = 'Please enter username and password.'; return; }
+
+  try {
+    const res = await fetch(`${API}/hallowner/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('loginErr').textContent = data.error || 'Login failed.'; return; }
+
+    token = data.token;
+    ownerData = data.owner;
+    localStorage.setItem('ho_token', token);
+    localStorage.setItem('ho_owner', JSON.stringify(ownerData));
+    showPortal();
+  } catch {
+    document.getElementById('loginErr').textContent = 'Cannot connect to server. Is the backend running?';
+  }
+}
+
+function showPortal() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('portalWrap').style.display = 'flex';
+  document.getElementById('sideOwnerName').textContent = ownerData.full_name;
+  document.getElementById('sideOwnerBiz').textContent  = ownerData.business_name || '';
+  loadDashboard();
+}
+
+function doLogout() {
+  localStorage.removeItem('ho_token');
+  localStorage.removeItem('ho_owner');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// API HELPER
+// ══════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${API}${path}`, opts);
+  if (res.status === 401) { doLogout(); return null; }
+  return res.json();
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+const panelTitles = { pDash:'Dashboard', pDetails:'Venue Details', pImages:'Photos & Gallery', pHeatmap:'Availability Calendar', pBookings:'Bookings', pSubscription:'Subscription' };
+
+function switchPanel(id) {
+  document.querySelectorAll('.ho-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ho-nav li a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  document.getElementById(`n-${id}`)?.classList.add('active');
+  document.getElementById('panelTitle').textContent = panelTitles[id] || '';
+
+  if (id === 'pDetails')  loadVenueTabs('detail');
+  if (id === 'pImages')   { loadVenueTabs('image'); loadImages(); }
+  if (id === 'pHeatmap')  { loadVenueTabs('heatmap'); initCalendar(); }
+  if (id === 'pBookings') { loadVenueTabs('bookings'); loadBookings(); }
+  if (id === 'pSubscription') loadSubscription();
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+async function loadDashboard() {
+  const data = await api('GET', '/hallowner/dashboard');
+  if (!data) return;
+  myVenues = data.venues || [];
+  currentVenueId = myVenues[0]?.id || null;
+
+  // Stats
+  let totalB=0, totalC=0, totalP=0;
+  myVenues.forEach(v => { totalB += v.bookings?.total||0; totalC += v.bookings?.confirmed||0; totalP += v.bookings?.pending||0; });
+  document.getElementById('st-venues').textContent    = myVenues.length;
+  document.getElementById('st-bookings').textContent  = totalB;
+  document.getElementById('st-confirmed').textContent = totalC;
+  document.getElementById('st-pending').textContent   = totalP;
+
+  // Subscription banner
+  const sub = data.subscription;
+  const subBox = document.getElementById('subBoxContainer');
+  if (sub) {
+    const days = sub.days_remaining;
+    const expired = days < 0;
+    subBox.innerHTML = `
+      <div class="sub-box${expired?' sub-expired':''}">
+        <div class="sub-box-info">
+          <h4>${sub.plan_name} Plan${expired?' — Expired':''}</h4>
+          <p>Subscription ${expired?'expired on':'valid until'}: <strong>${new Date(sub.end_date).toLocaleDateString('en-PK',{day:'numeric',month:'long',year:'numeric'})}</strong></p>
+          ${expired?'<p style="color:#f08080;margin-top:6px">⚠️ Contact admin to renew your subscription</p>':''}
+        </div>
+        <div class="sub-days">
+          <div class="sub-days-num">${expired?'0':days}</div>
+          <div class="sub-days-lbl">Days Remaining</div>
+        </div>
+      </div>`;
+    document.getElementById('sideSubBadge').textContent = expired ? '⚠ Expired' : `${days}d left`;
+  }
+
+  // Venue cards
+  const list = document.getElementById('dashVenueList');
+  if (!myVenues.length) { list.innerHTML = '<p style="color:var(--stone);font-size:13px">No venues assigned yet. Contact admin.</p>'; return; }
+  list.innerHTML = myVenues.map(v => `
+    <div onclick="switchPanel('pDetails')" style="background:var(--cream);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+      <div style="height:140px;background:#ddd;overflow:hidden">
+        <img src="${v.image_url||'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80'}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80'" />
+      </div>
+      <div style="padding:14px 16px">
+        <div style="font-weight:500;font-size:14px">${v.name}</div>
+        <div style="font-size:12px;color:var(--stone);margin-top:3px">📍 ${v.location||'—'}</div>
+        <div style="display:flex;gap:10px;margin-top:10px;font-size:11px">
+          <span style="color:var(--olive-dk)">✓ ${v.bookings?.confirmed||0} confirmed</span>
+          <span style="color:#8a6b20">⏳ ${v.bookings?.pending||0} pending</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// VENUE TABS
+// ══════════════════════════════════════════
+function loadVenueTabs(area) {
+  const containers = { detail:'detailVenueTabs', image:'imageVenueTabs', heatmap:'heatmapVenueTabs', bookings:'bookingsVenueTabs' };
+  const el = document.getElementById(containers[area]);
+  if (!el || !myVenues.length) return;
+  el.innerHTML = myVenues.map(v => `<button class="venue-tab${v.id===currentVenueId?' active':''}" onclick="selectVenue(${v.id},'${area}')">${v.name}</button>`).join('');
+  if (!currentVenueId) { currentVenueId = myVenues[0].id; }
+  if (area === 'detail')   loadVenueDetails(currentVenueId);
+}
+
+function selectVenue(id, area) {
+  currentVenueId = id;
+  const containers = { detail:'detailVenueTabs', image:'imageVenueTabs', heatmap:'heatmapVenueTabs', bookings:'bookingsVenueTabs' };
+  document.querySelectorAll(`#${containers[area]} .venue-tab`).forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (area === 'detail')   loadVenueDetails(id);
+  if (area === 'image')    loadImages(id);
+  if (area === 'heatmap')  loadHeatmap(id);
+  if (area === 'bookings') loadBookings(id);
+}
+
+// ══════════════════════════════════════════
+// VENUE DETAILS
+// ══════════════════════════════════════════
+async function loadVenueDetails(venueId) {
+  if (!venueId) return;
+  const data = await api('GET', `/hallowner/venue/${venueId}/details`);
+  if (!data) return;
+
+  const b = data.base || {};
+  const d = data.details || {};
+
+  const fields = ['name','location','description','max_guests','price',
+    'capacity_seated','capacity_standing','price_per_head','price_flat','min_booking_amount',
+    'no_of_halls','hall_size_sqft','parking_capacity','advance_booking_days',
+    'address_full','google_maps_link','contact_phone','contact_whatsapp','website_url',
+    'catering_info','cancellation_policy','special_notes'];
+
+  fields.forEach(f => {
+    const el = document.getElementById(`d-${f}`);
+    if (el) el.value = b[f] ?? d[f] ?? '';
+  });
+
+  // Checkboxes
+  ['has_ac','has_parking','has_catering','has_decoration','has_photography',
+   'has_sound_system','has_generator','has_bridal_room','has_stage','has_valet'].forEach(f => {
+    const el = document.getElementById(`d-${f}`);
+    if (el) { el.checked = !!d[f]; syncToggleByInputId(`d-${f}`); }
+  });
+}
+
+async function saveVenueDetails() {
+  if (!currentVenueId) return;
+  const payload = {};
+  const fields = ['name','location','description','max_guests','price',
+    'capacity_seated','capacity_standing','price_per_head','price_flat','min_booking_amount',
+    'no_of_halls','hall_size_sqft','parking_capacity','advance_booking_days',
+    'address_full','google_maps_link','contact_phone','contact_whatsapp','website_url',
+    'catering_info','cancellation_policy','special_notes',
+    'has_ac','has_parking','has_catering','has_decoration','has_photography',
+    'has_sound_system','has_generator','has_bridal_room','has_stage','has_valet'];
+
+  fields.forEach(f => {
+    const el = document.getElementById(`d-${f}`);
+    if (!el) return;
+    payload[f] = el.type === 'checkbox' ? (el.checked ? 1 : 0) : el.value;
+  });
+
+  const res = await api('PUT', `/hallowner/venue/${currentVenueId}/details`, payload);
+  if (res?.message || res?.id) {
+    showToast('✓ Venue details saved!');
+    const msg = document.getElementById('detailsSaveMsg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 3000);
+  } else {
+    showToast(res?.error || 'Save failed', true);
+  }
+}
+
+// ══════════════════════════════════════════
+// IMAGES
+// ══════════════════════════════════════════
+async function loadImages(venueId) {
+  venueId = venueId || currentVenueId;
+  if (!venueId) return;
+  const data = await api('GET', `/hallowner/venue/${venueId}/details`);
+  if (!data) return;
+  renderImages(data.images || []);
+}
+
+function renderImages(imgs) {
+  const grid = document.getElementById('imageGrid');
+  document.getElementById('imgCount').textContent = `(${imgs.length} photos)`;
+  if (!imgs.length) { grid.innerHTML = '<div style="text-align:center;color:var(--stone);padding:40px;grid-column:1/-1">No photos yet. Add your first photo above.</div>'; return; }
+  grid.innerHTML = imgs.map(img => `
+    <div class="img-item">
+      <img src="${img.image_url}" onerror="this.src='https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&q=80'" />
+      ${img.is_primary ? '<div class="img-primary-badge">Cover</div>' : ''}
+      <div class="img-item-overlay">
+        ${!img.is_primary ? `<button class="img-overlay-btn set-primary" onclick="setPrimary(${img.id})">Set Cover</button>` : ''}
+        <button class="img-overlay-btn del-img" onclick="deleteImage(${img.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addImage() {
+  const url = document.getElementById('newImgUrl').value.trim();
+  const caption = document.getElementById('newImgCaption').value.trim();
+  const is_primary = document.getElementById('newImgPrimary').checked;
+  if (!url) { showToast('Please enter an image URL', true); return; }
+  if (!currentVenueId) return;
+
+  const res = await api('POST', `/hallowner/venue/${currentVenueId}/images`, { image_url: url, caption, is_primary });
+  if (res?.message || res?.id) {
+    showToast('✓ Photo added!');
+    document.getElementById('newImgUrl').value = '';
+    document.getElementById('newImgCaption').value = '';
+    document.getElementById('newImgPrimary').checked = false;
+    loadImages();
+  } else {
+    showToast(res?.error || 'Failed to add photo', true);
+  }
+}
+
+async function deleteImage(id) {
+  if (!confirm('Delete this photo?')) return;
+  const res = await api('DELETE', `/hallowner/venue/${currentVenueId}/images/${id}`);
+  if (res?.message || res?.id) { showToast('Photo deleted'); loadImages(); }
+}
+
+async function setPrimary(id) {
+  const res = await api('PUT', `/hallowner/venue/${currentVenueId}/images/${id}/set-primary`);
+  if (res?.message) { showToast('✓ Cover photo updated!'); loadImages(); }
+}
+
+// ══════════════════════════════════════════
+// HEATMAP CALENDAR
+// ══════════════════════════════════════════
+function initCalendar() {
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  loadHeatmap(currentVenueId);
+}
+
+async function loadHeatmap(venueId) {
+  venueId = venueId || currentVenueId;
+  if (!venueId) return;
+  const data = await api('GET', `/hallowner/venue/${venueId}/heatmap`);
+  if (!data) return;
+  blockedDates = (data.blockedDates || []).map(d => ({ date: d.date, reason: d.reason || 'Booked' }));
+  bookingDates = data.bookingDates || [];
+  document.getElementById('blockedCount').textContent = blockedDates.length;
+  document.getElementById('bookingCount').textContent = bookingDates.length;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('calMonthLabel').textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = DAYS.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-day cal-empty"></div>`;
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayDate = new Date(calYear, calMonth, d);
+    const isPast  = dayDate < today;
+    const isToday = dayDate.getTime() === today.getTime();
+    const isBlocked = blockedDates.some(b => b.date === dateStr);
+    const isBooking = bookingDates.includes(dateStr);
+
+    let cls = 'cal-day';
+    if (isPast)     cls += ' cal-past';
+    if (isToday)    cls += ' cal-today';
+    if (isBlocked)  cls += ' cal-blocked';
+    if (isBooking)  cls += ' cal-booking';
+
+    const title = isBooking ? 'Client booking — cannot change' : (isBlocked ? `Blocked: ${blockedDates.find(b=>b.date===dateStr)?.reason}` : 'Click to block');
+    grid.innerHTML += `<div class="${cls}" title="${title}" onclick="toggleDate('${dateStr}')">${d}</div>`;
+  }
+}
+
+function toggleDate(dateStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const clicked = new Date(dateStr);
+  if (clicked < today) return;
+  if (bookingDates.includes(dateStr)) return;
+
+  const idx = blockedDates.findIndex(b => b.date === dateStr);
+  if (idx >= 0) {
+    blockedDates.splice(idx, 1);
+  } else {
+    blockedDates.push({ date: dateStr, reason: document.getElementById('blockReason').value });
+  }
+  document.getElementById('blockedCount').textContent = blockedDates.length;
+  renderCalendar();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  renderCalendar();
+}
+
+async function saveHeatmap() {
+  if (!currentVenueId) return;
+  const res = await api('POST', `/hallowner/venue/${currentVenueId}/heatmap/bulk`, { dates: blockedDates });
+  if (res?.message) {
+    showToast('✓ Calendar saved! Admin has been notified.');
+  } else {
+    showToast(res?.error || 'Save failed', true);
+  }
+}
+
+// ══════════════════════════════════════════
+// BOOKINGS
+// ══════════════════════════════════════════
+async function loadBookings(venueId) {
+  venueId = venueId || currentVenueId;
+  if (!venueId) return;
+  const data = await api('GET', `/hallowner/venue/${venueId}/bookings`);
+  const tbody = document.getElementById('bookingsBody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--stone)">No bookings yet for this venue.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(b => `
+    <tr>
+      <td><code style="font-size:11px">${b.booking_ref}</code></td>
+      <td>${b.client_name}</td>
+      <td>${b.client_phone||'—'}</td>
+      <td>${b.wedding_date ? new Date(b.wedding_date).toLocaleDateString('en-PK',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
+      <td>${b.guest_count||'—'}</td>
+      <td>PKR ${Number(b.grand_total||0).toLocaleString()}</td>
+      <td><span class="badge badge-${b.status}">${b.status}</span></td>
+    </tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+// SUBSCRIPTION
+// ══════════════════════════════════════════
+async function loadSubscription() {
+  const data = await api('GET', '/hallowner/dashboard');
+  const sub = data?.subscription;
+  const el  = document.getElementById('subDetailBox');
+  if (!sub) { el.innerHTML = '<p style="color:var(--stone);font-size:13px">No active subscription found. Contact admin.</p>'; return; }
+  const days = sub.days_remaining;
+  const expired = days < 0;
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div style="padding:16px 20px;background:var(--cream);border-radius:10px">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--stone);margin-bottom:4px">Plan</div>
+        <div style="font-size:20px;font-family:'Cormorant Garamond',serif;color:var(--olive-dk)">${sub.plan_name}</div>
+      </div>
+      <div style="padding:16px 20px;background:var(--cream);border-radius:10px">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--stone);margin-bottom:4px">Status</div>
+        <div style="font-size:16px;color:${expired?'#c04040':'var(--olive-dk)'};font-weight:500">${expired?'⚠ Expired':'✓ Active'}</div>
+      </div>
+      <div style="padding:16px 20px;background:var(--cream);border-radius:10px">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--stone);margin-bottom:4px">Valid Until</div>
+        <div style="font-size:16px;color:var(--ch)">${new Date(sub.end_date).toLocaleDateString('en-PK',{day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <div style="padding:16px 20px;background:${expired?'rgba(200,80,80,0.08)':'rgba(61,79,48,0.06)'};border-radius:10px">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--stone);margin-bottom:4px">Days Remaining</div>
+        <div style="font-size:28px;font-family:'Cormorant Garamond',serif;color:${expired?'#c04040':days<30?'#8a6b20':'var(--olive-dk)'}">${expired?0:days}</div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════
+function syncToggle(labelId) {
+  const label = document.getElementById(labelId);
+  const cb = label?.querySelector('input[type=checkbox]');
+  if (cb) label.classList.toggle('on', cb.checked);
+}
+function syncToggleByInputId(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const label = el.closest('.toggle-item');
+  if (label) label.classList.toggle('on', el.checked);
+}
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError?' error':'');
+  setTimeout(() => t.className = '', 3200);
+}
+</script>
+</body>
+</html>

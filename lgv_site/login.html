@@ -139,10 +139,17 @@
         const data = await res.json();
         if (res.ok) {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('lgv_jwt', data.token); // used by admin panel
           const parts = (data.user.name || '').split(' ');
           setSession({ id: data.user.id, first: parts[0], last: parts.slice(1).join(' '), email: data.user.email, role: data.user.role });
           toast(`👋 Welcome back, ${parts[0]}!`);
-          setTimeout(() => window.location.href = 'index.html', 800);
+          // Redirect based on role
+          if (data.user.role === 'admin') {
+            localStorage.setItem('lgv_admin_session', 'true');
+            setTimeout(() => window.location.href = 'admin.html', 800);
+          } else {
+            setTimeout(() => window.location.href = 'index.html', 800);
+          }
         } else {
           showMsg('loginMsg', data.message || 'Login failed.', 'error');
         }

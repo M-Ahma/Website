@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../config/db');
 
-// GET all active venues — uses actual DB column names (capacity, not max_guests)
+// GET all active venues — uses actual DB column names (capacity, not capacity)
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(
